@@ -17,35 +17,29 @@ library(lubridate)
 library(viridis)
 library(plotly)
 library(Polychrome)
+library(here)
 ```
 
 ```{r}
-driftBugs <- read.csv("clean_data/clean_drift_bugs.csv")
-driftBugsComplete <- read.csv("clean_data/clean_drift_bugs_complete.csv")%>%
-  mutate(Date = lubridate::ymd(Date))# zeroes filled in
-driftDailyCPUE <- read_csv("clean_data/clean_drift_daily_cpue.csv")
+root <- "WY2016_WY2019/data_clean"
 
-driftFamilyAbund <-read.csv("clean_data/clean_drift_family_abundant.csv")%>%
+driftBugs <- read_csv(here::here(root, "clean_drift_bugs.csv"))
+#driftBugsComplete <- read.csv(here::here(root, "data_clean", "clean_drift_bugs_complete.csv"))%>%
+#  mutate(Date = lubridate::ymd(Date))# zeroes filled in
+driftDailyCPUE <- read_csv(here::here(root,"clean_drift_daily_cpue.csv"))
+
+driftFamilyAbund <-read_csv(here::here(root, "clean_drift_family_abundant.csv"))%>%
   mutate(Date = lubridate::ymd(Date))
-driftOrderAbund<- read.csv("clean_data/clean_drift_order_abundant.csv")%>%
+
+driftOrderAbund<- read_csv(here::here(root, "clean_drift_order_abundant.csv"))%>%
   mutate(Date = lubridate::ymd(Date)) %>%
   ungroup()
-driftOrderIEP <- read.csv("clean_data/clean_drift_order_iep.csv")
-driftInund <- read.csv("clean_data/clean_drift_inund_sumCPUE.csv")
-inundation <- read.csv("Data/Yolo_Bypass_Inundation1998-2021.csv") 
-inundation <- inundation %>%
-  mutate(Date = lubridate::ymd(inundation$Date))%>%
-  mutate(Year = year(Date),
-         Month = month(Date),
-         WY = ifelse(month(Date) > 9, Year + 1, Year))
-inundation2 <- read.csv("clean_data/inundation2.csv") %>%
-  mutate(Date = lubridate::ymd(Date))%>%
-  mutate(Year = year(Date),
-         Month = month(Date),
-         WY = ifelse(month(Date) > 9, Year + 1, Year)) %>%
-  mutate(Inundation_mean = replace(Inundation_mean, Inundation_mean == 50, 25)) %>%
-  filter(WY > 2016 & WY<2020) %>%
-  ungroup()
+
+driftOrderIEP <- read_csv(here::here(root, "clean_drift_order_iep.csv"))
+driftInund <- read_csv(here::here(root, "clean_drift_inund_sumCPUE.csv"))
+inundation <- read_csv(here::here(root, "inundation.csv") )
+inundation2 <- read_csv(here::here(root, "inundation2.csv")) %>%
+  mutate(Date = lubridate::ymd(Date))
   
 ```
 
@@ -95,9 +89,9 @@ Total CPUE by Station and Water Year
 
 Export
 ```{r}
-tiff(filename = "figures/fig_drift1_totalcpuebystationyear.tiff", res = 300, width = 5, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
-sumCPUE
-dev.off()
+# tiff(filename = "figures/fig_drift1_totalcpuebystationyear.tiff", res = 300, width = 5, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+# sumCPUE
+# dev.off()
 ```
 
 1. Mean CPUE by WY and Station
@@ -132,10 +126,10 @@ meanDriftBugsInundation <- driftDailyCPUE %>%
 
 Export
 ```{r}
-tiff(filename = "figures/fig_drift2_meancpuebystationyearinund.tiff", res = 300, width = 6, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
-
-meanCPUEinund
-dev.off()
+# tiff(filename = "figures/fig_drift2_meancpuebystationyearinund.tiff", res = 300, width = 6, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+# 
+# meanCPUEinund
+# dev.off()
 ```
 
 *Greater CPUE during inundation periods for 2017 and 2018, but not 2019.*
@@ -293,8 +287,8 @@ ggplot(Season3_STTD, aes(x = Season3, y = Order, fill = CPUEsc)) + geom_tile() +
 MonthOrder <- driftOrderAbund %>%
   filter(Order %in% orderAbund)%>%
   group_by(Station, fWY, fMonth, Order) %>%
-  summarize(sumCPUE = sum(CPUEDay),
-            meanCPUE = round(mean(CPUEDay),3)) %>%
+  summarize(sumCPUE = sum(CPUEDaily),
+            meanCPUE = round(mean(CPUEDaily),3)) %>%
   unique() %>%
   ungroup() %>%
   complete(fMonth, nesting(fWY, Station, Order), fill = list(sumCPUE = 0,

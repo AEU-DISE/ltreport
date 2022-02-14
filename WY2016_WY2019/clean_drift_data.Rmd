@@ -18,13 +18,16 @@ library(tidyverse)
 library(lubridate)
 library(viridis)
 library(plotly)
+library(readr)
+library(here)
 ```
 
 Read in original data
 ```{r}
-drift0 <- read.csv("Data/Drift_data_20210420.csv")
-taxonomy <- read.csv("Data/DriftTaxonomy.csv")
-inundation <- read.csv("Data/Yolo_Bypass_Inundation1998-2021.csv")
+root <- "WY2016_WY2019"
+drift0 <- read.csv(here::here(root, "data_raw", "Drift_data_20210420.csv"))
+taxonomy <- read.csv(here::here(root, "data_raw","DriftTaxonomy.csv"))
+inundation <- read.csv(here::here(root, "data_raw", "Yolo_Bypass_Inundation1998-2021.csv"))
 ```
 
 Datetimes
@@ -237,9 +240,13 @@ Add inundation
 inundation2 <- select(inundation, -c(StageHeight_FW:Overtopping_LIS)) %>%
   mutate(Inundation2 = ifelse(lead(Inundation, 10) == "TRUE", "TRUE", Inundation),
          Inundation_n = ifelse(Inundation2 == "TRUE", 150, 0),
-         Inundation_mean = ifelse(Inundation2 == "TRUE", 50, 0),
+         Inundation_mean = ifelse(Inundation2 == "TRUE", 25, 0),
          Inundation_log = ifelse(Inundation2 == "TRUE", 5, 0)) %>%
-  filter(WY>2015 & WY <2021)
+  filter(WY>2016 & WY <2020) %>%
+  mutate(Date = lubridate::ymd(Date))%>%
+  mutate(Year = year(Date),
+         Month = month(Date),
+         WY = ifelse(month(Date) > 9, Year + 1, Year)) 
 
 
 driftBugsSum <- driftDailyCPUE %>%
@@ -252,15 +259,16 @@ driftInund <- left_join(driftBugsSum, inundation2, by = c("Date", "WY"))
 
 Write data
 ```{r}
-write.csv(driftBugs, "clean_data/clean_drift_bugs.csv", row.names = FALSE)
-write.csv(driftBugsComplete, "clean_data/clean_drift_bugs_complete.csv", row.names = FALSE)
-write.csv(driftDailyCPUE, "clean_data/clean_drift_daily_cpue.csv", row.names = FALSE)
-write.csv(driftFamilyAbund, "clean_data/clean_drift_family_abundant.csv", row.names = FALSE)
-write.csv(driftOrderAbund, "clean_data/clean_drift_order_abundant.csv", row.names = FALSE)
-write.csv(driftOrderIEP, "clean_data/clean_drift_order_iep.csv", row.names = FALSE)
+write_csv(driftBugs, "WY2016_WY2019/data_clean/clean_drift_bugs.csv")
+saveRDS(driftBugsComplete, "WY2016_WY2019/data_clean/clean_drift_bugs_complete.rds")
+write_csv(driftDailyCPUE, "WY2016_WY2019/data_clean/clean_drift_daily_cpue.csv")
+write_csv(driftFamilyAbund, "WY2016_WY2019/data_clean/clean_drift_family_abundant.csv")
+write_csv(driftOrderAbund, "WY2016_WY2019/data_clean/clean_drift_order_abundant.csv")
+write_csv(driftOrderIEP, "WY2016_WY2019/data_clean/clean_drift_order_iep.csv")
 
-write.csv(driftInund, "clean_data/clean_drift_inund_sumCPUE.csv", row.names = FALSE)
-write.csv(inundation2, "clean_data/inundation2.csv", row.names = FALSE)
+write_csv(driftInund, "WY2016_WY2019/data_clean/clean_drift_inund_sumCPUE.csv")
+write_csv(inundation, "WY2016_WY2019/data_clean/inundation.csv")
+write_csv(inundation2, "WY2016_WY2019/data_clean/inundation2.csv")
 
 
 ```
