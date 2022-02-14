@@ -1,0 +1,1248 @@
+---
+title: "DriftAnalysis"
+author: "Catarina Pien"
+date: "5/11/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+Last updated 6 August, 2021 by Catarina Pien
+
+```{r setup, include=FALSE}
+rm(list=ls(all=TRUE))
+
+library(tidyverse)
+library(lubridate)
+library(viridis)
+library(plotly)
+library(Polychrome)
+```
+
+```{r}
+driftBugs <- read.csv("clean_data/clean_drift_bugs.csv")
+driftBugsComplete <- read.csv("clean_data/clean_drift_bugs_complete.csv")%>%
+  mutate(Date = lubridate::ymd(Date))# zeroes filled in
+driftDailyCPUE <- read_csv("clean_data/clean_drift_daily_cpue.csv")
+
+driftFamilyAbund <-read.csv("clean_data/clean_drift_family_abundant.csv")%>%
+  mutate(Date = lubridate::ymd(Date))
+driftOrderAbund<- read.csv("clean_data/clean_drift_order_abundant.csv")%>%
+  mutate(Date = lubridate::ymd(Date)) %>%
+  ungroup()
+driftOrderIEP <- read.csv("clean_data/clean_drift_order_iep.csv")
+driftInund <- read.csv("clean_data/clean_drift_inund_sumCPUE.csv")
+inundation <- read.csv("Data/Yolo_Bypass_Inundation1998-2021.csv") 
+inundation <- inundation %>%
+  mutate(Date = lubridate::ymd(inundation$Date))%>%
+  mutate(Year = year(Date),
+         Month = month(Date),
+         WY = ifelse(month(Date) > 9, Year + 1, Year))
+inundation2 <- read.csv("clean_data/inundation2.csv") %>%
+  mutate(Date = lubridate::ymd(Date))%>%
+  mutate(Year = year(Date),
+         Month = month(Date),
+         WY = ifelse(month(Date) > 9, Year + 1, Year)) %>%
+  mutate(Inundation_mean = replace(Inundation_mean, Inundation_mean == 50, 25)) %>%
+  filter(WY > 2016 & WY<2020) %>%
+  ungroup()
+  
+```
+
+Mean Daily sum of CPUE by WY
+```{r}
+meanDriftBugs <- driftDailyCPUE %>%
+  group_by(fWY, WYClass, Station) %>%
+  summarize(meanCPUE = mean(CPUEDaily, na.rm = TRUE),
+            sdCPUE = sd(CPUEDaily, na.rm = TRUE),
+            n = n(),
+            se = sdCPUE/sqrt(n))
+```
+
+Lists
+```{r}
+#n = [22]
+familyAbund <- unique(driftFamilyAbund$Family)
+
+#n = [20]
+orderAbund <- unique(driftOrderAbund$Order)
+
+orderAbund2 <- c( "Amphipoda","Coleoptera","Diptera","Enchytraeida","Hemiptera","Hygrophila","Hymenoptera")
+
+orderIEP <- c("Diptera","Hemiptera","Amphipoda","Hymenoptera","Coleoptera", "Collembola")
+```
+
+Theme
+```{r}
+theme_ltreport <- theme_bw() + 
+  theme(axis.text = element_text(size = 14),
+                        axis.title = element_text(size = 14),
+                        strip.text = element_text(size = 13),
+                        axis.text.x = element_text(angle = 90),
+                        legend.title = element_text(size = 12),
+                        legend.text = element_text(size = 12))
+```
+
+# Make plots
+
+Total CPUE by Station and Water Year 
+```{r}
+#Total CPUE
+(sumCPUE <- ggplot(driftDailyCPUE, aes(x = fWY, y = CPUEDaily, fill = WYClass)) + geom_col()  + facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Water Year", y = expression(Total~CPUE~(Count~m^-3))) +
+  guides(fill = guide_legend(title = "Water Year Class")) + theme_ltreport + theme(legend.position = "top"))
+```
+
+
+Export
+```{r}
+tiff(filename = "figures/fig_drift1_totalcpuebystationyear.tiff", res = 300, width = 5, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+sumCPUE
+dev.off()
+```
+
+1. Mean CPUE by WY and Station
+# Summed daily CPUE, meaned over the year
+```{r}
+#Mean CPUE
+(meanCPUE <- ggplot(meanDriftBugs, aes(x = fWY, y = meanCPUE, fill = WYClass)) + 
+   geom_col()  + 
+   geom_errorbar(aes(ymin = meanCPUE-se, ymax = meanCPUE + se), width = .2) +
+ facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Water Year", y = expression(Mean~Daily~CPUE~(Count~m^-3))) +
+  guides(fill = guide_legend(title = "Water Year Class")) + theme_ltreport + theme(legend.position = "top"))
+```
+
+Export
+```{r}
+tiff(filename = "figures/fig_drift1a_meancpuebystationyear.tiff", res = 300, width = 5, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+meanCPUE
+dev.off()
+```
+
+*CPUE is lower in SHR compared with STTD, with much greater CPUE in wet years in STTD, slightly greater CPUE in dry year in SHR.*
+
+2. Inundation/no inundation-mean CPUE
+```{r}
+meanDriftBugsInundation <- driftDailyCPUE %>%
+  group_by(fWY, WYClass, Station, Inundation) %>%
+  summarize(meanCPUE = mean(CPUEDaily, na.rm = TRUE))
+
+(meanCPUEinund <- ggplot(meanDriftBugsInundation, aes(x = Inundation, y = meanCPUE, fill = Station)) + geom_col()  + facet_wrap(~fWY) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Inundation", y = expression(Total~CPUE~(Count~m^-3))) +
+  guides(fill = guide_legend(title = "Station")) + theme_ltreport + theme(legend.position = "top"))
+```
+
+Export
+```{r}
+tiff(filename = "figures/fig_drift2_meancpuebystationyearinund.tiff", res = 300, width = 6, height = 4, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+
+meanCPUEinund
+dev.off()
+```
+
+*Greater CPUE during inundation periods for 2017 and 2018, but not 2019.*
+
+
+### By Order
+
+#### Year
+
+Calculate Abundance by Station and Water Year
+```{r}
+OrderAbund <- driftOrderAbund %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDaily)) %>%
+  ungroup() %>%
+  group_by(Station, fWY, totalCPUE, Order) %>%
+  summarize(meanCPUE = mean(CPUEDaily),
+            sumCPUE = sum(CPUEDaily),
+    propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() %>%
+  arrange(Station, fWY, desc(propCPUE))
+
+```
+
+WY - Order by Station
+3. Proportional Abundance (Order) by WY and Station
+(included in report)
+```{r}
+pal36 <- palette36.colors(36)
+pal36 <- as.vector(t(pal36))
+
+# sum CPUE
+ggplot(OrderAbund, aes(fWY, sumCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
+
+# mean CPUE
+ggplot(OrderAbund, aes(fWY, meanCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
+
+# Proportional
+propOrder <- ggplot(OrderAbund, aes(x=fWY, y = propCPUE/100, fill = Order)) + geom_bar(stat = "identity", color = "black") + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + 
+  labs(y = "Proportional Catch Per Unit Effort", x = "Water Year") + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
+```
+
+Export
+```{r}
+tiff(filename = "figures/fig_drift3_ordercomposition.tiff", res = 300, width = 6.5, height = 4.55, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+propOrder
+dev.off()
+```
+
+#### Season - Filtered Orders
+
+```{r}
+Season1Order <- driftOrderAbund %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDaily)) %>%
+  ungroup() %>%
+  select(c(Station, fWY, Season1, Order, CPUEDaily, totalCPUE)) %>%
+  group_by(Station, fWY, Season1, Order) %>%
+  summarize(sumCPUE = sum(CPUEDaily),
+            meanCPUE =  mean(CPUEDaily),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() %>%
+  arrange(Station, fWY, desc(propCPUE))
+
+Season2Order <- driftOrderAbund %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDaily)) %>%
+  ungroup() %>%
+  select(c(Station, fWY, Season2, Order, CPUEDaily, totalCPUE)) %>%
+  group_by(Station, fWY, Season2, Order) %>%
+  summarize(sumCPUE = sum(CPUEDaily),
+            meanCPUE =  mean(CPUEDaily),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() %>%
+  arrange(Station, fWY, desc(propCPUE))
+
+Season3Order <- driftOrderAbund %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDaily)) %>%
+  ungroup() %>%
+  select(c(Station, fWY, Season3, Order, CPUEDaily, totalCPUE)) %>%
+  group_by(Station, fWY, Season3, Order) %>%
+  summarize(sumCPUE = sum(CPUEDaily),
+            meanCPUE =  mean(CPUEDaily),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() %>%
+  arrange(Station, fWY, desc(propCPUE))
+```
+
+##### Sherwood
+```{r}
+Season1_SHR <- Season1Order %>%
+  filter(Station == "SHR") %>%
+  #filter(Order %in% orderIEP) %>%
+  group_by(Order) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+Season3_SHR <- Season3Order %>%
+  filter(Station == "SHR") %>%
+  #filter(Order %in% orderIEP) %>%
+  group_by(Order) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+```
+
+```{r}
+ggplot(Season1_SHR, aes(x = Season1, y = sumCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season1_SHR, aes(x = Season1, y = Order, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+
+ggplot(Season3_SHR, aes(x = Season3, y = sumCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season3_SHR, aes(x = Season3, y = meanCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season3_SHR, aes(x = Season3, y = Order, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+```
+
+##### Screw trap
+```{r}
+Season1_STTD <- Season1Order %>%
+  filter(Station == "STTD") %>%
+  #filter(Order %in% orderIEP) %>%
+  group_by(Order) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+Season3_STTD <- Season3Order %>%
+  filter(Station == "STTD") %>%
+  #filter(Order %in% orderIEP) %>%
+  group_by(Order) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+```
+
+```{r}
+ggplot(Season1_STTD, aes(x = Season1, y = sumCPUE, fill = Order)) + geom_col(col= "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season1_STTD, aes(x = Season1, y = meanCPUE, fill = Order)) + geom_col(col = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season1_STTD, aes(x = Season1, y = Order, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+
+ggplot(Season3_STTD, aes(x = Season3, y = sumCPUE, fill = Order)) + geom_col(col = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season3_STTD, aes(x = Season3, y = meanCPUE, fill = Order)) + geom_col(col = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season3_STTD, aes(x = Season3, y = Order, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+```
+
+#### Month 
+```{r}
+MonthOrder <- driftOrderAbund %>%
+  filter(Order %in% orderAbund)%>%
+  group_by(Station, fWY, fMonth, Order) %>%
+  summarize(sumCPUE = sum(CPUEDay),
+            meanCPUE = round(mean(CPUEDay),3)) %>%
+  unique() %>%
+  ungroup() %>%
+  complete(fMonth, nesting(fWY, Station, Order), fill = list(sumCPUE = 0,
+                                                             meanCPUE = 0))
+```
+
+##### Sherwood
+Abundance by Month - Filtered Orders to last report
+```{r}
+MonthFilt_SHR <- MonthOrder %>%
+  filter(Station == "SHR") %>%
+  group_by(fMonth) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+ggplot(MonthFilt_SHR, aes(x = fMonth, y = sumCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~fWY) + labs(title = "Sherwood") + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(MonthFilt_SHR, aes(x = fMonth, y = Order, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + labs(title = "Sherwood") + theme_ltreport
+
+```
+
+##### Screw trap
+Abundance by Month - Filtered Orders to last report
+```{r}
+MonthFilt_STTD <- MonthOrder %>%
+  filter(Station == "STTD") %>%
+  group_by(fMonth) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+ggplot(MonthFilt_STTD, aes(x = fMonth, y = sumCPUE, fill = Order)) + geom_col(color = "black") + facet_wrap(~fWY) + labs(title = "Screw Trap") + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(MonthFilt_STTD, aes(x = fMonth, y = Order, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + labs(title = "Screw Trap") + theme_ltreport
+```
+
+
+### By Family
+
+Abundance all together
+```{r}
+# These are the ones in at least 90% samples
+FamilyLastReport <- driftBugs %>%
+ filter(Family %in% familyAbund) %>%
+  group_by(Station, fWY, Season1, Season2, fMonth, Family) %>%
+  summarize(occurrence = n(),
+            totalCPUE = sum(CPUE))
+
+# For looking at what is in "others"
+driftFamily1 <- driftBugs %>%
+  filter(!Family %in% familyAbund) %>%
+  group_by(Station,fWY, Season1, Season2, Order, Family) %>%
+  summarize(occurrence = n(),
+            totalCPUE = sum(CPUE)) %>%
+  select(c(Station, fWY,  Family, everything()))
+
+# These are the "others"
+driftFamily2 <- driftBugs %>%
+  filter(!Family %in% familyAbund) %>%
+  group_by(Station,fWY,Season1, Season2, fMonth) %>%
+  summarize(occurrence = n(),
+            totalCPUE = sum(CPUE),
+            Family = "Other") %>%
+  select(c(Station,fWY,Season1, Season2,  fMonth, Family, everything()))
+
+# Bind other with the rest
+driftFamilyF <- rbind(FamilyLastReport, driftFamily2) %>%
+  arrange(Station, fWY,  Season1, Season2, fMonth, Family)
+
+
+```
+
+#### Year
+```{r}
+FamilyAbund <- driftFamilyAbund %>%
+  filter(Family %in% familyAbund)%>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDay)) %>%
+  ungroup() %>%
+  group_by(Station, fWY, Family) %>%
+  summarize(sumCPUE = sum(CPUEDay),
+            meanCPUE = round(mean(CPUEDay),3),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup()
+
+# Species composition, by Family
+ggplot(FamilyAbund, aes(x = fWY, y = sumCPUE, fill = Family)) + geom_col(color = "black") + scale_fill_manual(values = pal36) + facet_wrap(~Station) + theme_ltreport
+
+# Proportional
+ggplot(FamilyAbund, aes(x=fWY, y = propCPUE/100, fill = Family)) + geom_bar(stat = "identity", color = "black") + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
+```
+
+#### Season - Filtered Family
+
+```{r}
+Season1Family <- driftFamilyAbund %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDay)) %>%
+  ungroup() %>%
+  select(c(Station, fWY, Season1, Family, CPUEDay, totalCPUE)) %>%
+  group_by(Station, fWY, Season1, Family) %>%
+  summarize(sumCPUE = sum(CPUEDay),
+            meanCPUE =  mean(CPUEDay),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() %>%
+  arrange(Station, fWY, desc(propCPUE))
+
+Season2Family <- driftFamilyAbund %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUEDay)) %>%
+  ungroup() %>%
+  select(c(Station, fWY, Season2, Family, CPUEDay, totalCPUE)) %>%
+  group_by(Station, fWY, Season2, Family) %>%
+  summarize(sumCPUE = sum(CPUEDay),
+            meanCPUE =  mean(CPUEDay),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() %>%
+  arrange(Station, fWY, desc(propCPUE))
+```
+
+##### Sherwood
+```{r}
+Season1_SHR <- Season1Family %>%
+  filter(Station == "SHR") %>%
+  #filter(Family %in% FamilyIEP) %>%
+  group_by(Family) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+Season2_SHR <- Season2Family %>%
+  filter(Station == "SHR") %>%
+  #filter(Family %in% FamilyIEP) %>%
+  group_by(Family) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+```
+
+```{r}
+ggplot(Season1_SHR, aes(x = Season1, y = sumCPUE, fill = Family)) + geom_col(color = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season1_SHR, aes(x = Season1, y = Family, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+
+ggplot(Season2_SHR, aes(x = Season2, y = sumCPUE, fill = Family)) + geom_col(color = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season2_SHR, aes(x = Season2, y = meanCPUE, fill = Family)) + geom_col(color = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season2_SHR, aes(x = Season2, y = Family, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+```
+
+##### Screw trap
+```{r}
+Season1_STTD <- Season1Family %>%
+  filter(Station == "STTD") %>%
+  #filter(Family %in% FamilyIEP) %>%
+  group_by(Family) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+Season2_STTD <- Season2Family %>%
+  filter(Station == "STTD") %>%
+  #filter(Family %in% FamilyIEP) %>%
+  group_by(Family) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+```
+
+```{r}
+ggplot(Season1_STTD, aes(x = Season1, y = sumCPUE, fill = Family)) + geom_col(col= "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season1_STTD, aes(x = Season1, y = meanCPUE, fill = Family)) + geom_col(col = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season1_STTD, aes(x = Season1, y = Family, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+
+ggplot(Season2_STTD, aes(x = Season2, y = sumCPUE, fill = Family)) + geom_col(col = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season2_STTD, aes(x = Season2, y = meanCPUE, fill = Family)) + geom_col(col = "black") + facet_wrap(~fWY) + theme_bw() + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(Season2_STTD, aes(x = Season2, y = Family, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + theme_bw() + theme_ltreport
+```
+
+
+#### Month 
+```{r}
+MonthFamily <- driftFamilyAbund %>%
+  filter(Family %in% familyAbund)%>%
+  mutate(totalCPUE = sum(CPUEDay)) %>%
+  ungroup() %>%
+  group_by(Station, fWY, fMonth, Family) %>%
+  summarize(sumCPUE = sum(CPUEDay),
+            meanCPUE = round(mean(CPUEDay),3),
+            propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup()
+```
+
+##### Sherwood
+```{r}
+MonthFamily_SHR <- MonthFamily %>%
+  filter(Station == "SHR") %>%
+    group_by(fMonth) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+ggplot(MonthFamily_SHR, aes(x = fMonth, y = sumCPUE, fill = Family)) + geom_col(color = "black") + facet_wrap(~fWY) + labs(title = "Sherwood") + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(MonthFamily_SHR, aes(x = fMonth, y = Family, fill = sumCPUE)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + labs(title = "Sherwood") + theme_ltreport
+```
+
+##### Screw trap
+```{r}
+MonthFamily_STTD <- MonthFamily %>%
+  filter(Station == "STTD") %>%
+  group_by(fMonth) %>%
+  mutate(CPUEsc = scale(sumCPUE))
+
+ggplot(MonthFamily_STTD, aes(x = fMonth, y = sumCPUE, fill = Family)) + geom_col(color = "black") + facet_wrap(~fWY) + labs(title = "Screw Trap") + scale_fill_manual(values = pal36) + theme_ltreport
+
+ggplot(MonthFamily_STTD, aes(x = fMonth, y = Family, fill = CPUEsc)) + geom_tile() + facet_wrap(~fWY) + scale_fill_viridis() + labs(title = "Screw Trap") + theme_ltreport
+```
+
+Diptera, Hemiptera, Amphipoda, Hymenoptera, Coleoptera, Collembola, All other 
+
+Compared to other lower trophic groups, drift invertebrate densities were much more variable across locations and across years, with the highest densities occurring primarily in winter and spring (Figure 3D).  Drift invertebrate densities showed the greatest differences between sampling locations in the higher outflow years of 2011 and 2016, during which extended floodplain inundation of the Yolo Bypass likely contributed to much higher densities of Diptera (Figures 3D and 8).  High densities of Diptera, an important food source for juvenile Chinook Salmon, in the Yolo Bypass during floodplain inundation have also been observed by Schemel et al. (2004) and Benigno and Sommer (2008).  Diptera made up over 60% of the Yolo Bypass drift invertebrate composition in winter 2011 and over 50% of the composition following the late floodplain inundation period in March of 2016 (Figure 8B).  Apart from 2014, spring drift invertebrate community densities were significantly different across sampling years between the Yolo Bypass and Sacramento River (ANOSIM p > 0.05, R value ≥ 0.3).  In all years, taxa orders Hemiptera (i.e. true bugs) and Diptera were top contributors to the differences in community composition between locations (SIMPER, ≥ 5% Hemiptera and ≥ 7% Diptera of taxa dissimilarity contribution).  The Diptera family Chironomidae (i.e. midges) was a primary contributor to the drift invertebrate community differences between sampling locations, especially in the highest outflow year of 2011.  In spring 2011, the higher densities of Diptera in the Yolo Bypass contributed to over 15% of the SIMPER taxa dissimilarity between the Sacramento River, with family Chironomidae making up 8% of that total dissimilarity contribution.  Benigno and Sommer (2008) also found that initial flood pulses in the Yolo Bypass are often dominated by chironomids emerging from sediments throughout the floodplain.
+
+
+
+#### By terrestrial/aquatic
+
+```{r}
+
+# fWY and Station
+ggplot(driftBugs, aes(fWY, CPUE, fill = Category)) + geom_col() + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + theme_bw() + theme(axis.text.x = element_text(angle = 90)) + theme_ltreport
+  
+
+MonthCategory_SHR <- driftBugs %>%
+  filter(Station == "SHR",
+         !is.na(Category)) %>%
+  group_by(fWY, fMonth, Category) %>%
+  summarize(totalCPUE = sum(CPUE)) %>%
+  mutate(CPUEsc = scale(totalCPUE))
+
+ggplot(MonthCategory_SHR, aes(fMonth, totalCPUE, fill = Category)) + geom_col(color = "black") + facet_wrap(~fWY) + labs(title = "SHR") +
+  scale_fill_manual(values = pal36) + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
+  
+MonthCategory_STTD <- driftBugs %>%
+  filter(Station == "STTD",
+         !is.na(Category)) %>%
+  group_by(fWY, fMonth, Category) %>%
+  summarize(totalCPUE = sum(CPUE)) %>%
+  mutate(CPUEsc = scale(totalCPUE))
+  
+ggplot(MonthCategory_STTD, aes(fMonth, totalCPUE, fill = Category)) + geom_col(color = "black") + facet_wrap(~fWY) + labs(title = "STTD") +
+  scale_fill_manual(values = pal36) + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
+```
+
+
+### Add Inundation
+Plot inundation with datetime vs. cpue 
+- color by order, family
+- added 10 days to inundation=yes for time for outflow
+```{r}
+# merged inundation and sampling
+driftBugs$Date <- date(driftBugs$Datetime)
+
+driftBugsOrder <- driftOrderAbund %>%
+    filter(Station == "STTD")
+
+driftBugsOrder2 <- driftOrderIEP %>%
+  filter(Station == "STTD")
+
+
+# Relationship
+ggplot(driftInund, aes(x = Inundation, y = CPUEDaily)) + geom_violin(aes(fill = Inundation)) + theme_ltreport
+
+```
+
+```{r}
+inundation2$color = ifelse(inundation2$Inundation == TRUE, "Inundation", "No Inundation")
+
+colors <- data.frame(Inundation = c("Inundation", "No Inundation"), Color = c("light blue", "white"))
+```
+
+Figure 4. Inundation vs CPUE all
+Export
+```{r}
+# Total CPUE
+(inunDriftAll <- ggplot() +
+  geom_col(data = inundation2, aes(x = Date, y = Inundation_n), color = "light blue") +
+  geom_line(data = driftDailyCPUE, aes(x = Date, y = CPUEDaily)) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
+  labs(y = expression(CPUE~(Count~m^-3))) +
+ # scale_fill_manual(limits = names(inundation2$Inundation_f), values = inundation2$color) +
+  theme_ltreport + 
+   theme(axis.title.x = element_blank()))
+  #scale_fill_manual(name = "Inundation", values = c("light blue", "white"), guide = guide_legend(override.aes = list(color = c("light blue", "white")))))
+
+tiff(filename = "figures/fig_drift4_totalcpuebyinundation.tiff", res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+inunDriftAll
+dev.off()
+```
+
+
+
+#### Order
+```{r}
+# Order1
+ggplot() +
+  geom_col(data = inundation2, aes(x = Date, y = Inundation_mean), color = "grey86") +
+  geom_line(data = driftBugsOrder, aes(x = Date, y = CPUEDaily, color = Order)) +
+  theme_ltreport
+
+# Order2
+Order2plot <- ggplot() +
+  geom_col(data = inundation2, aes(x = Date, y = Inundation_mean), color = "grey86") +
+  geom_line(data = driftBugsOrder2, aes(x = Date, y = meanCPUE, color = Order)) + 
+  scale_x_date(date_breaks = "6 months") +
+  theme_ltreport
+Order2plot
+ggplotly(Order2plot)
+```
+
+```{r}
+#Mean by order-month-year
+OrderMean <- driftOrderAbund %>%
+  filter(Order %in% orderAbund2)%>%
+  mutate(YrMon = zoo::as.yearmon(Date)) %>%
+  group_by(Station, YrMon, Order) %>%
+  summarize(meanDate = mean(Date),
+    sumCPUE = sum(CPUEDaily),
+            meanCPUE=mean(CPUEDaily)) 
+STTDMean <- filter(OrderMean, Station == "STTD")
+SHRMean <- filter(OrderMean, Station == "SHR")
+
+
+```
+
+Export
+```{r}
+(inunDriftAbund <- ggplot() +
+  geom_col(data = inundation2, aes(x = Date, y = Inundation_mean), color = "grey86") +
+  geom_line(data = STTDMean, aes(x = meanDate, y = meanCPUE, color = Order)) + 
+   geom_point(data = STTDMean, aes(x = meanDate, y = meanCPUE, color = Order)) +
+   labs(y = expression(Mean~CPUE~(Count~m^-3))) + scale_color_viridis(discrete = TRUE, option = "plasma") + scale_x_date(date_breaks = "3 months", date_label = "%b-%Y") +
+     theme_bw() + 
+  theme_ltreport +
+   theme(axis.title.x = element_blank()))
+
+tiff(filename = "figures/fig_drift5_Abundcpuebyinundation_STTD.tiff", res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+inunDriftAbund
+dev.off()
+```
+
+Time series Sherwood plot
+
+```{r}
+(SHRDriftTime <- ggplot() +
+  geom_line(data = SHRMean, aes(x = meanDate, y = meanCPUE, color = Order)) +
+   geom_point(data = SHRMean, aes(x = meanDate, y = meanCPUE, color = Order, shape = Order)) +
+   labs(y = expression(Mean~CPUE~(Count~m^-3))) + scale_color_viridis(discrete = TRUE, option = "plasma") + scale_x_date(date_breaks = "3 months", date_label = "%b-%Y") +
+  theme_bw() + 
+  theme_ltreport +
+   theme(axis.title.x = element_blank()))
+
+tiff(filename = "figures/fig_drift6_Abundcpuebyinundation_SHR.tiff", res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+SHRDriftTime
+dev.off()
+```
+
+Drift time series plot 
+* This one
+```{r}
+(DriftTime <- ggplot() +
+   geom_col(data = inundation2, aes(x = Date, y = Inundation_mean), color = "grey86") +
+  geom_line(data = OrderMean, aes(x = meanDate, y = meanCPUE, color = Order)) +
+   geom_point(data = OrderMean, aes(x = meanDate, y = meanCPUE, color = Order, shape = Order), size = 1.5) +
+   labs(y = expression(Mean~CPUE~(Count~m^-3))) + 
+   scale_color_viridis(discrete = TRUE, option = "plasma") + scale_x_date(date_breaks = "3 months", date_label = "%b-%Y") +
+   facet_grid(Station~., scales = "free_y") +
+  theme_bw() + 
+  theme_ltreport +
+  theme(axis.title.x = element_blank()))
+```
+
+
+
+```{r}
+tiff(filename = "figures/fig_drift6_Abundcpuebyinundation_Station.tiff", res = 300, width = 7, height = 5.5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+DriftTime
+dev.off()
+```
+
+
+
+#### Family
+```{r}
+# Family1
+Fam1plot <- ggplot() +
+  geom_col(data = inundation2, aes(x = Date, y = Inundation_log), color = "grey85") +
+  geom_line(data = driftBugsFamily, aes(x = Date, y = log(sumCPUE+1), color = Family)) + 
+  scale_x_date(date_breaks = "6 months") +
+  theme_ltreport
+Fam1plot
+plotly::ggplotly(Fam1plot)
+# Family2
+Fam2plot  <-  ggplot() +
+  geom_col(data = inundation2, aes(x = Date, y = Inundation_log)) +
+  geom_point(data = driftBugsFamily2, aes(x = Date, y = log(sumCPUE+1), color = Family)) + 
+  geom_line(data = driftBugsFamily2, aes(x = Date, y = log(sumCPUE+1), color = Family)) +
+  scale_x_date(date_breaks = "6 months") +
+  theme_ltreport
+ggplotly(Fam2plot)
+```
+
+Summary: We definitely see Chironomidae/Diptera peaking during inundation. Corixidae also seems to peak right after inundation. Possibly Hyallelidae, but pretty variable throughout the year. Possibly Dytiscidae right at the beginning of inundation? Possibly Ceratopogonidae and Corophiidae?
+
+# Statistics
+## Mann-Whitney U/Kruskal Wallis since non-parametric
+### Inundation
+```{r}
+driftDailyCPUE <- driftDailyCPUE %>%
+  mutate(logCPUE = log(CPUEDaily+1))
+driftSTTD <- filter(driftDailyCPUE, Station == "STTD") 
+hist(driftSTTD$CPUEDaily) #zero-inflated and NOT normal
+hist(driftSTTD$logCPUE) # still not normal
+
+wilcox.test(logCPUE~Inundation, data = driftSTTD)
+ggplot(driftSTTD, aes(x = Inundation, y = logCPUE)) + geom_col()
+```
+
+*Significant effect of inundation on CPUE*
+
+### Station/WY
+```{r}
+hist(driftDailyCPUE$logCPUE) 
+m1 <- lm(logCPUE ~ Station*fWY, data = driftDailyCPUE)
+anova(m1)
+
+par(mfrow = c(2,2))
+plot(m1)
+par(mfrow = c(1,1))
+
+acf(driftDailyCPUE$logCPUE)
+
+ggplot(driftDailyCPUE, aes(x = fWY, y = log(CPUEDaily+1), fill = Station)) + geom_col()
+
+
+glm1 <- glm(CountDaily ~ Station*fWY, data = driftDailyCPUE, family = "poisson", offset = log(VolumeAdj))
+
+summary(glm1)
+plot(glm1)
+
+fmeans <- exp(predict(glm1, newdata = data.frame(Station = c("SHR","STTD"), fWY = c("2017", "2018", "2019"))))
+countreg::rootogram(fmeans)
+
+summary(glm)
+plot(glm)
+```
+
+*Significant effect of station, but not WY on CPUE*
+
+## NMDS
+
+### Order
+Complete Case Order
+```{r}
+Drift_Order_complete <- driftOrderAbund %>%
+  filter(Order != "") %>%
+  left_join(inundation2) %>%
+  filter(!is.na(Inundation)) %>%
+  rename(CPUE2 = CPUEDaily) %>%
+  group_by(Station, Date, Order) %>%
+  arrange(desc(Station, Date, Order, CPUE2)) %>%
+  slice(1) %>% # there is one duplicate 12/21/2016 that is causing issues. All 0s
+  ungroup()
+```
+
+Create matrix
+```{r}
+matOrder <- Drift_Order_complete %>% dplyr::select(c("Station", "Season1", "Season2", "Season3", "fWY", "WYClass", "Inundation", "fMonth", "Date", "Order", "CPUE2")) 
+
+# Check no duplicates
+check <- matOrder %>% group_by(Station, Date, Order) %>%
+  mutate(n = n()) %>%
+  filter(n > 1)
+
+# Species Matrix
+Order_w <- matOrder %>% pivot_wider(names_from = Order, values_from = CPUE2, values_fill = list(CPUE2=0)) %>% ungroup() %>%
+mutate(fWY = as.factor(fWY),
+         Inundation = as.factor(Inundation),
+         Inundation = ifelse(Inundation == "FALSE", "No", "Yes"))
+
+# Remove any row where there is no catch for the day.
+Order_w2 <- Order_w %>% mutate(Total = dplyr::select(., Amphipoda:Tubificida) %>%  rowSums(na.rm = TRUE)) %>%
+  filter(Total !=0)
+
+# STTD only for inundation
+Order_STTD <- Order_w %>% filter(Station == "STTD")
+
+Order_STTD2 <- Order_STTD %>% mutate(Total = dplyr::select(., Amphipoda:Tubificida) %>%  rowSums(na.rm = TRUE)) %>%
+  filter(Total !=0)
+```
+
+
+Run NMDS
+```{r}
+library(vegan)
+# NMDS Order
+nmdsOrder <- metaMDS(Order_w2[,10:29], distance="bray", k=3, trymax=400, autotransform = FALSE)
+nmdsOrder
+
+stressplot(nmdsOrder)
+
+
+# STTD
+nmdsOrderSTTD <- metaMDS(Order_STTD2[,10:29], distance="bray", k=3, trymax=400, autotransform = FALSE)
+nmdsOrderSTTD
+
+stressplot(nmdsOrderSTTD)
+
+```
+
+#### Plotting code from Rosie/Mallory
+```{r}
+source("NMDS_reference/plotNMDS.r")
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Drift_env1 <- Order_w2 %>%
+  select(c(Station:Inundation)) %>%
+  mutate(Station = as.factor(Station),
+         fWY = as.factor(fWY),
+         Season1 = as.factor(Season1),
+         Season2 = as.factor(Season2),
+         Season3 = as.factor(Season3))
+
+Drift_env_STTD <- Order_STTD2 %>%
+  select(c(Station:Inundation)) %>%
+  mutate(Station = as.factor(Station),
+         fWY = as.factor(fWY),
+         Season1 = as.factor(Season1),
+         Season2 = as.factor(Season2),
+         Season3= as.factor(Season3))
+
+#Rosie's plotNMDS code for report figures
+plotStation <- PlotNMDS(nmdsOrder, Drift_env1, group = "Station", textp = FALSE)
+
+plotWY <- PlotNMDS(nmdsOrder, Drift_env1, group = "fWY", textp = FALSE)
+
+plotInun <- PlotNMDS(nmdsOrderSTTD, Drift_env_STTD, group = "Inundation", textp = FALSE)
+
+plotSeason1 <- PlotNMDS(nmdsOrder, Drift_env1, group = "Season1", textp = FALSE)
+
+plot150Season2 <- PlotNMDS(nmdsOrder, Drift_env1, group = "Season3", textp = FALSE)
+```
+
+```{r}
+#tiff("Figures/fig_drift7_NMDS_Station_Drift.tiff", res=300, family = "sans", compression = "lzw")
+#PlotNMDS(nmdsOrder, Drift_env1, group = "Station", textp = FALSE)
+#dev.off()
+```
+
+
+
+
+
+
+
+
+
+Plot NMDS
+
+```{r}
+theme_NMDS <- theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank())
+```
+
+```{r nmdsplot, message = FALSE, warning = FALSE}
+### NMDS scores
+order.scores <- as.data.frame(scores(nmdsOrder))
+species.scores <- as.data.frame(scores(nmdsOrder, "species"))
+species.scores$species <- rownames(species.scores)
+
+# Need a category to merge scores with the rest of env data
+row.names(order.scores) <- row.names(Order_w2)
+order.nmdsplot <- cbind(order.scores, Order_w2)
+
+########### STTD version
+
+### NMDS scores
+order.scores2 <- as.data.frame(scores(nmdsOrderSTTD))
+species.scores2 <- as.data.frame(scores(nmdsOrderSTTD, "species"))
+species.scores2$species <- rownames(species.scores2)
+
+# Need a category to merge scores with the rest of env data
+row.names(order.scores2) <- row.names(Order_STTD2)
+order.nmdsplot2 <- cbind(order.scores2, Order_STTD2)
+
+
+
+# Plotting Function
+f_plotNMDS <- function(nmdsDf, covariate, colors = cols, legendtitle=covariate) {
+  
+  ggplot(nmdsDf, aes(NMDS1, NMDS2, color = .data[[covariate]])) + 
+  geom_point(aes(shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
+  # #geom_text(aes(label = WYClass)) +
+  stat_ellipse(type = 't', size = 1, aes(linetype = .data[[covariate]])) +
+  annotate("text", x = min(order.nmdsplot$NMDS1) + 0.25, y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrder$stress,3))) + # Add stress to plot
+  scale_color_manual(values = colors, name = legendtitle) +
+    labs(shape = legendtitle, linetype = legendtitle, color = legendtitle) +
+  theme_NMDS
+}
+
+cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
+cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
+
+(nmds_station <- f_plotNMDS(order.nmdsplot, "Station", cols))
+(nmds_WY <- f_plotNMDS(order.nmdsplot, "fWY", cols, "Water Year")) 
+(nmds_inundation <- f_plotNMDS(order.nmdsplot2, "Inundation", cols, "Inundation") )
+nmds_season1 <- f_plotNMDS(order.nmdsplot, "Season1", cols)
+(nmds_season3 <- f_plotNMDS(order.nmdsplot, "Season3", cols2, "Season"))
+nmds_season3_STTD <- f_plotNMDS(order.nmdsplot2, "Season3", cols2, "Season")
+```
+
+```{r}
+tiff("Figures/fig_drift7_NMDS_Station_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",  family = "sans", compression = "lzw")
+nmds_station
+dev.off()
+
+tiff("Figures/fig_drift8_NMDS_WY_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
+nmds_WY
+dev.off()
+
+tiff("Figures/fig_drift9_NMDS_Inundation_Drift.tiff", res=300, width = 5, height = 3,5, units = "in",family = "sans", compression = "lzw")
+nmds_inundation
+dev.off()
+
+tiff("Figures/fig_drift10_NMDS_Season_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
+nmds_season3
+dev.off()
+
+tiff("Figures/fig_drift10_NMDS_SeasonSTTD_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
+nmds_season3_STTD
+dev.off()
+```
+
+Other plotting method
+```{r}
+############ Plots
+# Option 2
+# With species scores and boxes
+
+# Make the datasets for the boxes
+grp.a <- order.nmdsplot[order.nmdsplot$Station =="STTD", ][chull(order.nmdsplot[order.nmdsplot$Station ==
+    "STTD", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
+grp.b <- order.nmdsplot[order.nmdsplot$Station =="SHR", ][chull(order.nmdsplot[order.nmdsplot$Station ==
+    "SHR", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
+hull.data0 <- rbind(grp.a, grp.b)  #combine grp.a and grp.b
+
+
+# Plot
+ggplot() + 
+  geom_point(data = order.nmdsplot, aes(x = NMDS1, y = NMDS2, color = Station),
+             position = position_jitter(.1)) +
+  geom_text(data = order.nmdsplot, aes(NMDS1, NMDS2, label = WYClass, color = Station)) +
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
+  theme_minimal() +
+  annotate("text", x = min(order.nmdsplot$NMDS1), y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrder$stress,3))) + # Add stress to plot
+  geom_polygon(data=hull.data0,aes(x=NMDS1,y=NMDS2,fill=Station,group=Station),alpha=0.30) 
+```
+
+
+Inundation for STTD
+```{r}
+# Make the datasets for the boxes
+grp.a2 <- order.nmdsplot2[order.nmdsplot2$Inundation2 =="TRUE", ][chull(order.nmdsplot2[order.nmdsplot2$Inundation2 ==
+    "TRUE", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
+grp.b2 <- order.nmdsplot2[order.nmdsplot2$Inundation2 =="FALSE", ][chull(order.nmdsplot2[order.nmdsplot2$Inundation2 ==
+    "FALSE", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
+hull.dataSTTD <- rbind(grp.a2, grp.b2)  #combine grp.a and grp.b
+
+
+# Plot
+ggplot() + 
+  geom_point(data = order.nmdsplot2, aes(x = NMDS1, y = NMDS2, color = Inundation2),
+             position = position_jitter(.1)) +
+  geom_text(data = order.nmdsplot2, aes(NMDS1, NMDS2, label = WYClass, color = Inundation2)) +
+  geom_text(data = species.scores2, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
+  theme_minimal() +
+  annotate("text", x = min(order.nmdsplot2$NMDS1), y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrderSTTD$stress,3))) + # Add stress to plot
+  geom_polygon(data=hull.dataSTTD,aes(x=NMDS1,y=NMDS2,fill=Inundation2,group=Inundation2),alpha=0.30) 
+```
+
+
+### Family
+
+Complete Case
+```{r}
+
+Drift_Family_complete <- driftFamilyAbund %>%
+  filter(!is.na(Family)) %>%
+  filter(Family != "") %>%
+  left_join(inundation2) %>%
+  filter(!is.na(Inundation2)) %>%
+  rename(CPUE2 = CPUEDay) %>%
+  arrange(Station, Date, Family)
+
+```
+
+
+Create matrix
+```{r}
+matFamily <- Drift_Family_complete %>% dplyr::select(c("Station", "Season1", "Season2", "fWY", "WYClass", "Inundation2", "fMonth", "Date", "Family", "CPUE2"))
+
+# Species Matrix
+Family_w <- matFamily %>% pivot_wider(names_from = Family, values_from = CPUE2, values_fill = list(CPUE2=0)) %>% ungroup()
+
+# Remove any row where there is no catch for the day.
+Family_w2 <- Family_w %>% mutate(Total = dplyr::select(., Ceratopogonidae:Psychodidae) %>%  rowSums(na.rm = TRUE)) %>%
+  filter(Total !=0)
+
+
+####### STTD only
+Family_STTD <- Family_w %>% filter(Station == "STTD")
+
+```
+
+
+```{r}
+library(vegan)
+# NMDS Family
+nmdsFamily <- metaMDS(Family_w2[,8:28], distance="bray", k=3, trymax=400, autotransform = FALSE)
+nmdsFamily
+
+stressplot(nmdsFamily)
+
+########## STTD
+
+# NMDS Family
+nmdsFamilySTTD <- metaMDS(Family_STTD[,8:28], distance="bray", k=3, trymax=400, autotransform = FALSE)
+nmdsFamilySTTD
+
+stressplot(nmdsFamilySTTD)
+```
+
+```{r nmdsplot, message = FALSE, warning = FALSE}
+### NMDS scores
+family.scores <- as.data.frame(scores(nmdsFamily))
+species.scoresF <- as.data.frame(scores(nmdsFamily, "species"))
+species.scoresF$species <- rownames(species.scoresF)
+
+# Need a category to merge scores with the rest of env data
+row.names(family.scores) <- row.names(Family_w)
+family.nmdsplot <- cbind(family.scores, Family_w)
+
+
+####### STTD
+
+### NMDS scores
+family.scores2 <- as.data.frame(scores(nmdsFamilySTTD))
+species.scores2F <- as.data.frame(scores(nmdsFamilySTTD, "species"))
+species.scores2F$species <- rownames(species.scores2F)
+
+# Need a category to merge scores with the rest of env data
+row.names(family.scores2) <- row.names(Family_STTD)
+family.nmdsplot2 <- cbind(family.scores2, Family_STTD)
+
+
+
+###  Plots
+# Station
+ggplot(family.nmdsplot, aes(NMDS1, NMDS2, color = Station)) + 
+  geom_point(aes(shape = WYClass),position = position_jitter(.1) ) +
+  geom_text(aes(label = WYClass)) +
+  stat_ellipse(type = 't', size = 1) +
+  scale_color_viridis(discrete = TRUE) +
+  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
+  theme_minimal() 
+
+# Year
+ggplot(family.nmdsplot, aes(NMDS1, NMDS2, color = fWY)) + 
+  geom_point(position = position_jitter(.1)) +
+  geom_text(aes(label = Station)) +
+  stat_ellipse(type = 't', size = 1) +
+  scale_color_viridis(discrete = TRUE) +
+  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
+  theme_minimal() 
+
+# Season
+ggplot(family.nmdsplot, aes(NMDS1, NMDS2, color = Season2)) + 
+  geom_point(position = position_jitter(.1)) +
+  geom_text(aes(label = Station)) +
+  stat_ellipse(type = 't', size = 1) +
+  scale_color_viridis(discrete = TRUE) +
+  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
+  theme_minimal() 
+
+# Season (STTD)
+ggplot(family.nmdsplot2, aes(NMDS1, NMDS2, color = Season2)) + 
+  geom_point(position = position_jitter(.1)) +
+  geom_text(aes(label = Station)) +
+  stat_ellipse(type = 't', size = 1) +
+  scale_color_viridis(discrete = TRUE) +
+  annotate("text", x = min(family.nmdsplot2$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
+  theme_minimal() 
+
+# Inundation
+ggplot(family.nmdsplot2, aes(NMDS1, NMDS2, color = Inundation2)) + 
+  geom_point(position = position_jitter(.1)) +
+  geom_text(aes(label = Station)) +
+  stat_ellipse(type = 't', size = 1) +
+  scale_color_viridis(discrete = TRUE) +
+  annotate("text", x = min(family.nmdsplot2$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
+  theme_minimal() 
+
+
+# Year (STTD)
+ggplot(family.nmdsplot2, aes(NMDS1, NMDS2, color = fWY)) + 
+  geom_point(position = position_jitter(.1)) +
+  geom_text(aes(label = Station)) +
+  stat_ellipse(type = 't', size = 1) +
+  scale_color_viridis(discrete = TRUE) +
+  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
+  theme_minimal() 
+
+
+
+# Option 2
+# With species scores and boxes
+
+# Make the datasets for the boxes
+grp.aF <- family.nmdsplot[family.nmdsplot$Station =="STTD", ][chull(family.nmdsplot[family.nmdsplot$Station ==
+    "STTD", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
+grp.bF <- family.nmdsplot[family.nmdsplot$Station =="SHR", ][chull(family.nmdsplot[family.nmdsplot$Station ==
+    "SHR", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
+hull.dataF <- rbind(grp.aF, grp.bF)  #combine grp.a and grp.b
+
+
+# Plot
+ggplot() + 
+  geom_point(data = family.nmdsplot, aes(x = NMDS1, y = NMDS2, color = Station),
+             position = position_jitter(.1)) +
+  geom_text(data = family.nmdsplot, aes(NMDS1, NMDS2, label = WYClass, color = Station)) +
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
+  theme_minimal() +
+  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
+  geom_polygon(data=hull.dataF,aes(x=NMDS1,y=NMDS2,fill=Station,group=Station),alpha=0.30) 
+
+
+```
+
+Inundation for STTD
+```{r}
+# Make the datasets for the boxes
+grp.aF2 <- family.nmdsplot2[family.nmdsplot2$Inundation2 =="TRUE", ][chull(family.nmdsplot2[family.nmdsplot2$Inundation2 ==
+    "TRUE", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
+grp.bF2 <- family.nmdsplot2[family.nmdsplot2$Inundation2 =="FALSE", ][chull(family.nmdsplot2[family.nmdsplot2$Inundation2 ==
+    "FALSE", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
+hull.dataF2 <- rbind(grp.aF2, grp.bF2)  #combine grp.a and grp.b
+
+
+# Plot
+ggplot() + 
+  geom_point(data = family.nmdsplot2, aes(x = NMDS1, y = NMDS2, color = Inundation2),
+             position = position_jitter(.1)) +
+  geom_text(data = family.nmdsplot2, aes(NMDS1, NMDS2, label = WYClass, color = Inundation2)) +
+  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
+  theme_minimal() +
+  annotate("text", x = min(family.nmdsplot2$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
+  geom_polygon(data=hull.dataF2,aes(x=NMDS1,y=NMDS2,fill=Inundation2,group=Inundation2),alpha=0.30) 
+```
+
+
+
+## Add PERMANOVA
+### Order
+```{r}
+# Row standardization - subset species columns only
+order.st <- decostand(Order_w[,10:28], method = 'total')
+order.st2 <- decostand(Order_STTD[,10:28], method = 'total')
+
+# Individual permanova models
+
+# Both stations
+(perm.Order.Station <- adonis(formula = order.st~Station, data = Order_w, method = "bray", permutations = 99))
+
+(perm.Order.Yr <- adonis(formula = order.st~ fWY , data = Order_w, method = "bray", permutations = 99))
+
+(perm.Order.Season <- adonis(formula = order.st~ Season3 , data = Order_w, method = "bray", permutations = 99))
+
+(perm.Order.StationSeason <- adonis(formula = order.st~ Season3 + Station , data = Order_w, method = "bray", permutations = 99))
+
+(perm.Order.StationSeasonYear <- adonis(formula = order.st~ Season3 + Station + fWY , data = Order_w, method = "bray", permutations = 99))
+
+(perm.int1 <- adonis(formula = order.st~Station:fWY, data = Order_w, method = "bray", permutations = 99))
+
+(perm.int2 <- adonis(formula = order.st~Station:Season3, data = Order_w, method = "bray", permutations = 99))
+
+(perm.int3 <- adonis(formula = order.st~fWY:Season3, data = Order_w, method = "bray", permutations = 99))
+
+(perm.Order.StationSeasonYearInt2 <- adonis(formula = order.st~ Season3 + Station + fWY + Station:Season3 , data = Order_w, method = "bray", permutations = 99))
+
+(perm.Order.StationSeasonYearInt2Int1 <- adonis(formula = order.st~ Season3 + Station + fWY + Station:Season3 + fWY:Station , data = Order_w, method = "bray", permutations = 99))
+
+
+# STTD only
+(perm.Order.Season <- adonis(formula = order.st2~ Season3 , data = Order_STTD, method = "bray", permutations = 99))
+
+(perm.Order.Inund <- adonis(formula = order.st2~Inundation, data = Order_STTD, method = "bray", permutations = 99))
+
+(perm.Order.fWY <- adonis(formula = order.st2~ fWY , data = Order_STTD, method = "bray", permutations = 99))
+
+(perm.Order.InundSeason <- adonis(formula = order.st2~Season3 + Inundation, data = Order_STTD, method = "bray", permutations = 99))
+
+(perm.Order.InundSeasonYear <- adonis(formula = order.st2~Season3 + Inundation + fWY, data = Order_STTD, method = "bray", permutations = 99))
+```
+
+*For both, Inundation + Season + fWY explains 17% variation*
+*For STTD, Inundation + Season explains 24% variation*
+
+### Family
+```{r}
+# Row standardization
+family.st <- decostand(Family_w[,9:27], method = 'total')
+family.st2 <- decostand(Family_STTD[,9:27], method = 'total')
+
+# Individual permanova models
+
+# Both stations
+(perm.Family.Station <- adonis(formula = family.st~Station, data = Family_w, method = "bray", permutations = 99))
+
+(perm.Family.Yr <- adonis(formula = family.st~ fWY , data = Family_w, method = "bray", permutations = 99))
+
+(perm.Family.Season <- adonis(formula = family.st~ Season2 , data = Family_w, method = "bray", permutations = 99))
+
+(perm.Family.StationSeason <- adonis(formula = family.st~ Season2 + Station , data = Family_w, method = "bray", permutations = 99))
+
+(perm.Family.StationSeasonYear <- adonis(formula = family.st~ Season2 + Station + fWY , data = Family_w, method = "bray", permutations = 99))
+
+# STTD only
+(perm.Family.Season <- adonis(formula = family.st2~ Season2 , data = Family_STTD, method = "bray", permutations = 99))
+
+(perm.Family.Inund <- adonis(formula = family.st2~Inundation2, data = Family_STTD, method = "bray", permutations = 99))
+
+(perm.Family.InundSeason <- adonis(formula = family.st2~Inundation2 + Season2, data = Family_STTD, method = "bray", permutations = 99))
+
+(perm.Family.InundSeasonYear <- adonis(formula = family.st2~Inundation2 + Season2 +fWY, data = Family_STTD, method = "bray", permutations = 99))
+
+(perm.Family.InundSeasonYear2 <- adonis(formula = family.st2~Inundation2 + Season2  + Season2:fWY, data = Family_STTD, method = "bray", permutations = 99))
+
+```
+
+
+
+
+## Plot water temperature, turbidity with drift data 

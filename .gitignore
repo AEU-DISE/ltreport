@@ -37,3 +37,7 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Specifics
+WY2016_WY2019/figures/
+WY2016_WY2019/data_clean/clean_drift_bugs_complete.csv
