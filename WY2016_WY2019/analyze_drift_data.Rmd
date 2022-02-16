@@ -573,25 +573,27 @@ ggplot(driftInund, aes(x = Inundation, y = CPUEDaily)) + geom_violin(aes(fill = 
 
 ```{r}
 inundation2$color = ifelse(inundation2$Inundation == TRUE, "Inundation", "No Inundation")
-
+inundation2$h175 = 175
 colors <- data.frame(Inundation = c("Inundation", "No Inundation"), Color = c("light blue", "white"))
 ```
 
-Figure 4. Inundation vs CPUE all
+Figure 4. Inundation vs CPUE by station
+need to fix this to add inundation legend and line colors/types
 Export
 ```{r}
 # Total CPUE
 (inunDriftAll <- ggplot() +
-  geom_col(data = inundation2, aes(x = Date, y = Inundation_n), color = "light blue") +
-  geom_line(data = driftDailyCPUE, aes(x = Date, y = CPUEDaily)) +
+  geom_col(data = inundation2, aes(x = Date, y = h175, colour = color, fill = color)) +
+  geom_line(data = driftDailyCPUE, aes(x = Date, y = CPUEDaily, linetype = Station)) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
+   #scale_colour_manual(values = c("black", "purple4")) + 
   labs(y = expression(CPUE~(Count~m^-3))) +
- # scale_fill_manual(limits = names(inundation2$Inundation_f), values = inundation2$color) +
+ scale_fill_manual(values = c("lightblue", "white")) +
   theme_ltreport + 
    theme(axis.title.x = element_blank()))
   #scale_fill_manual(name = "Inundation", values = c("light blue", "white"), guide = guide_legend(override.aes = list(color = c("light blue", "white")))))
 
-tiff(filename = "figures/fig_drift4_totalcpuebyinundation.tiff", res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+tiff(filename = paste("WY2016_WY2019/figures/fig_drift4b_totalcpuebyinundation.tiff"), res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
 inunDriftAll
 dev.off()
 ```
