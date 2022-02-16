@@ -237,9 +237,9 @@ driftFamilyAbund <- driftFamilyDaily %>%
 
 Add inundation
 ```{r}
-inundation2 <- select(inundation, -c(StageHeight_FW:Overtopping_LIS)) %>%
+inundation2 <- dplyr::select(inundation, -c(StageHeight_FW:Overtopping_LIS)) %>%
   mutate(Inundation2 = ifelse(lead(Inundation, 10) == "TRUE", "TRUE", Inundation),
-         Inundation_n = ifelse(Inundation2 == "TRUE", 150, 0),
+         Inundation_n = ifelse(Inundation2 == "TRUE", 175, 0),
          Inundation_mean = ifelse(Inundation2 == "TRUE", 25, 0),
          Inundation_log = ifelse(Inundation2 == "TRUE", 5, 0)) %>%
   filter(WY>2016 & WY <2020) %>%
