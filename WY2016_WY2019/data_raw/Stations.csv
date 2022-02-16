@@ -1,4 +1,4 @@
 StationCode,StationName,Latitude,Longitude,DataTypes
-SHR,Sacramento River at Sherwood Harbor,38.53188,-121.528,"Biological, WQ"
-STTD,Screw Trap in Toe Drain,38.35338,-121.643,"Biological, WQ"
-LIS,Toe Drain at Lisbon Weir,38.474816,-121.588584,WQ
+SHR,Sacramento River at Sherwood Harbor,38.53188,-121.528,"WQ, Zooplankton, Drift Invertebrates, Phytoplankton"
+STTD,Screw Trap in Toe Drain,38.35338,-121.643,"WQ, Zooplankton, Drift Invertebrates, Phytoplankton"
+LIS,Toe Drain at Lisbon Weir,38.474816,-121.588584,"WQ, Phytoplankton"
