@@ -13,7 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Add data
 ```{r}
-stations <- read.csv("Data/Stations.csv")
+root <- "WY2016_WY2019"
+stations <- read_csv(here::here(root, "data_raw", "Stations.csv"))
 ```
 
 ```{r}
@@ -38,7 +39,7 @@ map
 
 # Add your points
 map2 <- map +
-  geom_point(data = stations, aes(x = Longitude, y = Latitude, color = Data.Types), size = 3) +
+  geom_point(data = stations, aes(x = Longitude, y = Latitude, color = DataTypes), size = 3) +
  geom_text(data = stations, aes(label = StationCode, x = Longitude, y = Latitude), size = 2, vjust = 0, hjust = 0) +
   labs(x = "Longitude", y = "Latitude")
 map2
@@ -85,7 +86,7 @@ map_final <- ggmap(map_obj) +
         legend.title = element_text(size = 13),
         legend.position = "top"
         ) +
-  guides(colour = guide_legend(title = "Data Type"))
+  guides(colour = guide_legend(nrow = 2, byrow = TRUE, title = "Data Type"))
 map_final
 
 map_final2 <- ggmap(map_obj) + 
@@ -113,7 +114,7 @@ map_final2
 Export Map
 ```{r}
 map_final
-ggsave("StationMap.tiff", width = 6, height = 8, units = "in", device = 'jpeg', dpi = 300)
+ggsave(paste0(root, "/figures/StationMap.tiff"), width = 6.5, height = 8, units = "in", device = 'jpeg', dpi = 300)
 
 map_final2
 ggsave("StationMapNoColors.tiff", width = 6, height = 8, units = "in", device = 'jpeg', dpi = 300)
