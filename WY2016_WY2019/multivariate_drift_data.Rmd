@@ -3,6 +3,8 @@ title: "multivariate_drift_data"
 author: "Catarina Pien"
 date: "2/14/2022"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -136,10 +138,11 @@ Plot NMDS (this one)
 ```{r}
 theme_NMDS <- theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank())
+panel.background = element_blank()) 
 ```
 
-```{r nmdsplot, message = FALSE, warning = FALSE}
+Calculate scores and prepare data frame for plotting
+```{r}
 ### NMDS scores
 order.scores <- as.data.frame(scores(nmdsOrder))
 species.scores <- as.data.frame(scores(nmdsOrder, "species"))
@@ -159,281 +162,64 @@ species.scores2$species <- rownames(species.scores2)
 # Need a category to merge scores with the rest of env data
 row.names(order.scores2) <- row.names(Order_STTD2)
 order.nmdsplot2 <- cbind(order.scores2, Order_STTD2)
+```
 
-
-
-# Plotting Function
-f_plotNMDS <- function(nmdsDf, covariate, colors = cols, legendtitle=covariate) {
+Plotting function
+```{r nmdsplot, message = FALSE, warning = FALSE}
+f_plotNMDS <- function(nmdsDf, nmdsDfSpecies, covariate, colors = cols, legendtitle=covariate) {
+  # extends the plot a little to include species labels that are a bit stretched out; may need to modify based on your data
+  limits_x = c(min(nmdsDfSpecies$NMDS1-1), max(nmdsDfSpecies$NMDS1+1))
+  limits_y = c(min(nmdsDfSpecies$NMDS2-0.1), max(nmdsDfSpecies$NMDS2+0.1))
   
-  ggplot(nmdsDf, aes(NMDS1, NMDS2, color = .data[[covariate]])) + 
-  geom_point(aes(shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
-  # #geom_text(aes(label = WYClass)) +
-  stat_ellipse(type = 't', size = 1, aes(linetype = .data[[covariate]])) +
+  # plot
+  ggplot(nmdsDf, aes(NMDS1, NMDS2)) +
+  geom_point(aes(color = .data[[covariate]],shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
+  ggrepel::geom_text_repel(data = nmdsDfSpecies, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
+  stat_ellipse(type = 't', size = 1, aes(color = .data[[covariate]],linetype = .data[[covariate]])) +
   annotate("text", x = min(order.nmdsplot$NMDS1) + 0.25, y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrder$stress,3))) + # Add stress to plot
   scale_color_manual(values = colors, name = legendtitle) +
-    labs(shape = legendtitle, linetype = legendtitle, color = legendtitle) +
+  scale_x_continuous(limits = limits_x) + 
+  #scale_y_continuous(limits = limits_y) + # include if you want to edit y limits
+  labs(shape = legendtitle, linetype = legendtitle, color = legendtitle) +
   theme_NMDS
 }
+```
 
+Make plots
+```{r}
 cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
 cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
 
-(nmds_station <- f_plotNMDS(order.nmdsplot, "Station", cols))
-(nmds_WY <- f_plotNMDS(order.nmdsplot, "fWY", cols, "Water Year")) 
-(nmds_inundation <- f_plotNMDS(order.nmdsplot2, "Inundation", cols, "Inundation") )
-nmds_season1 <- f_plotNMDS(order.nmdsplot, "Season1", cols)
-(nmds_season3 <- f_plotNMDS(order.nmdsplot, "Season3", cols2, "Season"))
-nmds_season3_STTD <- f_plotNMDS(order.nmdsplot2, "Season3", cols2, "Season")
+(nmds_station <- f_plotNMDS(order.nmdsplot, species.scores,  "Station", cols))
+(nmds_WY <- f_plotNMDS(order.nmdsplot, species.scores, "fWY", cols, "Water Year")) 
+(nmds_inundation <- f_plotNMDS(order.nmdsplot2, species.scores2,  "Inundation", cols, "Inundation") )
+nmds_season1 <- f_plotNMDS(order.nmdsplot, species.scores, "Season1", cols)
+(nmds_season3 <- f_plotNMDS(order.nmdsplot, species.scores, "Season3", cols2, "Season"))
+nmds_season3_STTD <- f_plotNMDS(order.nmdsplot2,species.scores2, "Season3", cols2, "Season")
 ```
 
+Save plots
 ```{r}
-tiff("Figures/fig_drift7_NMDS_Station_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",  family = "sans", compression = "lzw")
+tiff("figures/fig_drift7_NMDS_Station_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",  family = "sans", compression = "lzw")
 nmds_station
 dev.off()
 
-tiff("Figures/fig_drift8_NMDS_WY_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
+tiff("figures/fig_drift8_NMDS_WY_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
 nmds_WY
 dev.off()
 
-tiff("Figures/fig_drift9_NMDS_Inundation_Drift.tiff", res=300, width = 5, height = 3,5, units = "in",family = "sans", compression = "lzw")
+tiff("figures/fig_drift9_NMDS_Inundation_Drift.tiff", res=300, width = 5, height = 3,5, units = "in",family = "sans", compression = "lzw")
 nmds_inundation
 dev.off()
 
-tiff("Figures/fig_drift10_NMDS_Season_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
+tiff("figures/fig_drift10_NMDS_Season_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
 nmds_season3
 dev.off()
 
-tiff("Figures/fig_drift10_NMDS_SeasonSTTD_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
+tiff("figures/fig_drift10_NMDS_SeasonSTTD_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",family = "sans", compression = "lzw")
 nmds_season3_STTD
 dev.off()
 ```
-
-Other plotting method
-```{r}
-############ Plots
-# Option 2
-# With species scores and boxes
-
-# Make the datasets for the boxes
-grp.a <- order.nmdsplot[order.nmdsplot$Station =="STTD", ][chull(order.nmdsplot[order.nmdsplot$Station ==
-    "STTD", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
-grp.b <- order.nmdsplot[order.nmdsplot$Station =="SHR", ][chull(order.nmdsplot[order.nmdsplot$Station ==
-    "SHR", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-hull.data0 <- rbind(grp.a, grp.b)  #combine grp.a and grp.b
-
-
-# Plot
-ggplot() + 
-  geom_point(data = order.nmdsplot, aes(x = NMDS1, y = NMDS2, color = Station),
-             position = position_jitter(.1)) +
-  geom_text(data = order.nmdsplot, aes(NMDS1, NMDS2, label = WYClass, color = Station)) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
-  theme_minimal() +
-  annotate("text", x = min(order.nmdsplot$NMDS1), y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrder$stress,3))) + # Add stress to plot
-  geom_polygon(data=hull.data0,aes(x=NMDS1,y=NMDS2,fill=Station,group=Station),alpha=0.30) 
-```
-
-
-Inundation for STTD
-```{r}
-# Make the datasets for the boxes
-grp.a2 <- order.nmdsplot2[order.nmdsplot2$Inundation2 =="TRUE", ][chull(order.nmdsplot2[order.nmdsplot2$Inundation2 ==
-    "TRUE", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
-grp.b2 <- order.nmdsplot2[order.nmdsplot2$Inundation2 =="FALSE", ][chull(order.nmdsplot2[order.nmdsplot2$Inundation2 ==
-    "FALSE", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-hull.dataSTTD <- rbind(grp.a2, grp.b2)  #combine grp.a and grp.b
-
-
-# Plot
-ggplot() + 
-  geom_point(data = order.nmdsplot2, aes(x = NMDS1, y = NMDS2, color = Inundation2),
-             position = position_jitter(.1)) +
-  geom_text(data = order.nmdsplot2, aes(NMDS1, NMDS2, label = WYClass, color = Inundation2)) +
-  geom_text(data = species.scores2, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
-  theme_minimal() +
-  annotate("text", x = min(order.nmdsplot2$NMDS1), y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrderSTTD$stress,3))) + # Add stress to plot
-  geom_polygon(data=hull.dataSTTD,aes(x=NMDS1,y=NMDS2,fill=Inundation2,group=Inundation2),alpha=0.30) 
-```
-
-
-### Family
-
-Complete Case
-```{r}
-
-Drift_Family_complete <- driftFamilyAbund %>%
-  filter(!is.na(Family)) %>%
-  filter(Family != "") %>%
-  left_join(inundation2) %>%
-  filter(!is.na(Inundation2)) %>%
-  rename(CPUE2 = CPUEDay) %>%
-  arrange(Station, Date, Family)
-
-```
-
-
-Create matrix
-```{r}
-matFamily <- Drift_Family_complete %>% dplyr::select(c("Station", "Season1", "Season2", "fWY", "WYClass", "Inundation2", "fMonth", "Date", "Family", "CPUE2"))
-
-# Species Matrix
-Family_w <- matFamily %>% pivot_wider(names_from = Family, values_from = CPUE2, values_fill = list(CPUE2=0)) %>% ungroup()
-
-# Remove any row where there is no catch for the day.
-Family_w2 <- Family_w %>% mutate(Total = dplyr::select(., Ceratopogonidae:Psychodidae) %>%  rowSums(na.rm = TRUE)) %>%
-  filter(Total !=0)
-
-
-####### STTD only
-Family_STTD <- Family_w %>% filter(Station == "STTD")
-
-```
-
-
-```{r}
-library(vegan)
-# NMDS Family
-nmdsFamily <- metaMDS(Family_w2[,8:28], distance="bray", k=3, trymax=400, autotransform = FALSE)
-nmdsFamily
-
-stressplot(nmdsFamily)
-
-########## STTD
-
-# NMDS Family
-nmdsFamilySTTD <- metaMDS(Family_STTD[,8:28], distance="bray", k=3, trymax=400, autotransform = FALSE)
-nmdsFamilySTTD
-
-stressplot(nmdsFamilySTTD)
-```
-
-```{r nmdsplot, message = FALSE, warning = FALSE}
-### NMDS scores
-family.scores <- as.data.frame(scores(nmdsFamily))
-species.scoresF <- as.data.frame(scores(nmdsFamily, "species"))
-species.scoresF$species <- rownames(species.scoresF)
-
-# Need a category to merge scores with the rest of env data
-row.names(family.scores) <- row.names(Family_w)
-family.nmdsplot <- cbind(family.scores, Family_w)
-
-
-####### STTD
-
-### NMDS scores
-family.scores2 <- as.data.frame(scores(nmdsFamilySTTD))
-species.scores2F <- as.data.frame(scores(nmdsFamilySTTD, "species"))
-species.scores2F$species <- rownames(species.scores2F)
-
-# Need a category to merge scores with the rest of env data
-row.names(family.scores2) <- row.names(Family_STTD)
-family.nmdsplot2 <- cbind(family.scores2, Family_STTD)
-
-
-
-###  Plots
-# Station
-ggplot(family.nmdsplot, aes(NMDS1, NMDS2, color = Station)) + 
-  geom_point(aes(shape = WYClass),position = position_jitter(.1) ) +
-  geom_text(aes(label = WYClass)) +
-  stat_ellipse(type = 't', size = 1) +
-  scale_color_viridis(discrete = TRUE) +
-  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
-  theme_minimal() 
-
-# Year
-ggplot(family.nmdsplot, aes(NMDS1, NMDS2, color = fWY)) + 
-  geom_point(position = position_jitter(.1)) +
-  geom_text(aes(label = Station)) +
-  stat_ellipse(type = 't', size = 1) +
-  scale_color_viridis(discrete = TRUE) +
-  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
-  theme_minimal() 
-
-# Season
-ggplot(family.nmdsplot, aes(NMDS1, NMDS2, color = Season2)) + 
-  geom_point(position = position_jitter(.1)) +
-  geom_text(aes(label = Station)) +
-  stat_ellipse(type = 't', size = 1) +
-  scale_color_viridis(discrete = TRUE) +
-  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
-  theme_minimal() 
-
-# Season (STTD)
-ggplot(family.nmdsplot2, aes(NMDS1, NMDS2, color = Season2)) + 
-  geom_point(position = position_jitter(.1)) +
-  geom_text(aes(label = Station)) +
-  stat_ellipse(type = 't', size = 1) +
-  scale_color_viridis(discrete = TRUE) +
-  annotate("text", x = min(family.nmdsplot2$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
-  theme_minimal() 
-
-# Inundation
-ggplot(family.nmdsplot2, aes(NMDS1, NMDS2, color = Inundation2)) + 
-  geom_point(position = position_jitter(.1)) +
-  geom_text(aes(label = Station)) +
-  stat_ellipse(type = 't', size = 1) +
-  scale_color_viridis(discrete = TRUE) +
-  annotate("text", x = min(family.nmdsplot2$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
-  theme_minimal() 
-
-
-# Year (STTD)
-ggplot(family.nmdsplot2, aes(NMDS1, NMDS2, color = fWY)) + 
-  geom_point(position = position_jitter(.1)) +
-  geom_text(aes(label = Station)) +
-  stat_ellipse(type = 't', size = 1) +
-  scale_color_viridis(discrete = TRUE) +
-  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
-  theme_minimal() 
-
-
-
-# Option 2
-# With species scores and boxes
-
-# Make the datasets for the boxes
-grp.aF <- family.nmdsplot[family.nmdsplot$Station =="STTD", ][chull(family.nmdsplot[family.nmdsplot$Station ==
-    "STTD", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
-grp.bF <- family.nmdsplot[family.nmdsplot$Station =="SHR", ][chull(family.nmdsplot[family.nmdsplot$Station ==
-    "SHR", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-hull.dataF <- rbind(grp.aF, grp.bF)  #combine grp.a and grp.b
-
-
-# Plot
-ggplot() + 
-  geom_point(data = family.nmdsplot, aes(x = NMDS1, y = NMDS2, color = Station),
-             position = position_jitter(.1)) +
-  geom_text(data = family.nmdsplot, aes(NMDS1, NMDS2, label = WYClass, color = Station)) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
-  theme_minimal() +
-  annotate("text", x = min(family.nmdsplot$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamily$stress,3))) + # Add stress to plot
-  geom_polygon(data=hull.dataF,aes(x=NMDS1,y=NMDS2,fill=Station,group=Station),alpha=0.30) 
-
-
-```
-
-Inundation for STTD
-```{r}
-# Make the datasets for the boxes
-grp.aF2 <- family.nmdsplot2[family.nmdsplot2$Inundation2 =="TRUE", ][chull(family.nmdsplot2[family.nmdsplot2$Inundation2 ==
-    "TRUE", c("NMDS1", "NMDS2")]), ]  # hull values for grp A
-grp.bF2 <- family.nmdsplot2[family.nmdsplot2$Inundation2 =="FALSE", ][chull(family.nmdsplot2[family.nmdsplot2$Inundation2 ==
-    "FALSE", c("NMDS1", "NMDS2")]), ]  # hull values for grp B
-hull.dataF2 <- rbind(grp.aF2, grp.bF2)  #combine grp.a and grp.b
-
-
-# Plot
-ggplot() + 
-  geom_point(data = family.nmdsplot2, aes(x = NMDS1, y = NMDS2, color = Inundation2),
-             position = position_jitter(.1)) +
-  geom_text(data = family.nmdsplot2, aes(NMDS1, NMDS2, label = WYClass, color = Inundation2)) +
-  geom_text(data = species.scores, aes(x = NMDS1, y = NMDS2, label= species), color = "black", size = 3.5) +
-  theme_minimal() +
-  annotate("text", x = min(family.nmdsplot2$NMDS1), y = min(family.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsFamilySTTD$stress,3))) + # Add stress to plot
-  geom_polygon(data=hull.dataF2,aes(x=NMDS1,y=NMDS2,fill=Inundation2,group=Inundation2),alpha=0.30) 
-```
-
 
 
 ## Add PERMANOVA
@@ -494,34 +280,3 @@ order.st2 <- decostand(Order_STTD2[,10:29], method = 'total')
 *For both, Inundation + Season + fWY explains 17% variation*
 *For STTD, Inundation + Season explains 24% variation*
 
-### Family
-```{r}
-# Row standardization
-family.st <- decostand(Family_w[,9:27], method = 'total')
-family.st2 <- decostand(Family_STTD[,9:27], method = 'total')
-
-# Individual permanova models
-
-# Both stations
-(perm.Family.Station <- adonis(formula = family.st~Station, data = Family_w, method = "bray", permutations = 99))
-
-(perm.Family.Yr <- adonis(formula = family.st~ fWY , data = Family_w, method = "bray", permutations = 99))
-
-(perm.Family.Season <- adonis(formula = family.st~ Season2 , data = Family_w, method = "bray", permutations = 99))
-
-(perm.Family.StationSeason <- adonis(formula = family.st~ Season2 + Station , data = Family_w, method = "bray", permutations = 99))
-
-(perm.Family.StationSeasonYear <- adonis(formula = family.st~ Season2 + Station + fWY , data = Family_w, method = "bray", permutations = 99))
-
-# STTD only
-(perm.Family.Season <- adonis(formula = family.st2~ Season2 , data = Family_STTD, method = "bray", permutations = 99))
-
-(perm.Family.Inund <- adonis(formula = family.st2~Inundation2, data = Family_STTD, method = "bray", permutations = 99))
-
-(perm.Family.InundSeason <- adonis(formula = family.st2~Inundation2 + Season2, data = Family_STTD, method = "bray", permutations = 99))
-
-(perm.Family.InundSeasonYear <- adonis(formula = family.st2~Inundation2 + Season2 +fWY, data = Family_STTD, method = "bray", permutations = 99))
-
-(perm.Family.InundSeasonYear2 <- adonis(formula = family.st2~Inundation2 + Season2  + Season2:fWY, data = Family_STTD, method = "bray", permutations = 99))
-
-```
