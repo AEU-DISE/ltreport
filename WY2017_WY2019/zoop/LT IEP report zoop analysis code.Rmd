@@ -1,0 +1,1138 @@
+---
+title: "LT IEP report 2017-2019 zoop analysis code"
+author: "Mallory Bedwell"
+date: "8/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/mbedwell/OneDrive - California Department of Water Resources/YBFMP/2020/LT report_IEP newsletter_2017-2019")
+```
+
+Importing the zoop file
+zoop file has been edited and roughly QC'd in excel
+see metadata text file for details
+
+
+```{r import}
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(viridis)
+
+#file comes from Yolo LT DB
+zoop <- read.csv("ZoopData_150_50_WQ_WY2017-WY2019.csv", header = TRUE) 
+
+#subset data so that only Yolo sites remain
+zoop <- subset(zoop, Station.Code %in% c("SHR", "STTD"))
+```
+
+subset by net type
+
+```{r subset data by 150 um and 50 um }
+
+#subset by net type
+zoop50 <- subset(zoop, ZoopNetType == 50)
+zoop150 <- subset(zoop, ZoopNetType == 150)
+
+
+#remove columns about other net type that aren't needed any more
+
+#zoop50
+zoop50$X150_ZoopStartMeter <- NULL
+zoop50$X150_ZoopEndMeter <- NULL
+zoop50$VolMeso <- NULL
+zoop50$SubMeso <-NULL
+zoop50$VolMicro <- NULL
+zoop50$SubMicro <- NULL
+zoop50$ZoopsData <- NULL
+zoop50$X50_ZoopsData <- NULL
+
+colnames(zoop50)[colnames(zoop50) == 'X50_ZoopStartMeter'] <- 'StartMeter'
+colnames(zoop50)[colnames(zoop50) == 'X50_ZoopEndMeter'] <- 'EndMeter'
+colnames(zoop50)[colnames(zoop50) == 'X50_SubMeso'] <- 'SubMeso'
+colnames(zoop50)[colnames(zoop50) == 'X50_VolMeso'] <- 'VolMeso'
+colnames(zoop50)[colnames(zoop50) == 'X50_SubMicro'] <- 'SubMicro'
+colnames(zoop50)[colnames(zoop50) == 'X50_VolMicro'] <- 'VolMicro'
+colnames(zoop50)[colnames(zoop50) == 'Subsample.'] <- 'Subsample'
+
+zoop50$Classification[zoop50$Classification == 'Microzooplankton & Nauplii'] <- 'Microzooplankton_Nauplii'
+
+
+#zoop150
+zoop150$X50_ZoopStartMeter <- NULL
+zoop150$X50_ZoopEndMeter <- NULL
+zoop150$X50_VolMeso <- NULL
+zoop150$X50_SubMeso <-NULL
+zoop150$X50_VolMicro <- NULL
+zoop150$X50_SubMicro <- NULL
+zoop150$ZoopsData <- NULL
+zoop150$X50_ZoopsData <- NULL
+
+colnames(zoop150)[colnames(zoop150) == 'X150_ZoopStartMeter'] <- 'StartMeter'
+colnames(zoop150)[colnames(zoop150) == 'X150_ZoopEndMeter'] <- 'EndMeter'
+colnames(zoop150)[colnames(zoop150) == 'Subsample.'] <- 'Subsample'
+
+zoop150$Classification[zoop150$Classification == 'Microzooplankton & Nauplii'] <- 'Microzooplankton_Nauplii'
+
+
+#create column of year and month for both net types
+zoop150$Year <- format(as.POSIXct(zoop150$Date, format = "%m/%d/%Y"), "%Y")
+zoop150$Month <- format(as.POSIXct(zoop150$Date, format = "%m/%d/%Y"), "%m")
+
+zoop50$Year <- format(as.POSIXct(zoop50$Date, format = "%m/%d/%Y"), "%Y")
+zoop50$Month <- format(as.POSIXct(zoop50$Date, format = "%m/%d/%Y"), "%m")
+
+#change format of date column
+zoop150$Date <- as.Date(zoop150$Date, format = c("%m/%d/%Y"))
+zoop50$Date <- as.Date(zoop50$Date, format = c("%m/%d/%Y"))
+
+#adding new column with WY 
+#zoop150
+zoop150$WY<- ifelse(
+  zoop150$Date >= "2016-10-01" & zoop150$Date <= "2017-09-30", "WY17",
+    ifelse(zoop150$Date >= "2017-10-01" & zoop150$Date <= "2018-09-30", "WY18",
+     ifelse(zoop150$Date >= "2018-10-01" & zoop150$Date <= "2019-09-30", "WY19", 
+     "error")))
+
+#zoop50
+zoop50$WY<- ifelse(
+  zoop50$Date >= "2016-10-01" & zoop50$Date <= "2017-09-30", "WY17",
+    ifelse(zoop50$Date >= "2017-10-01" & zoop50$Date <= "2018-09-30", "WY18",
+     ifelse(zoop50$Date >= "2018-10-01" & zoop50$Date <= "2019-09-30", "WY19", 
+     "error")))
+
+#remove records with Error for WY because they are not within designated WYs for analysis
+zoop150 <- zoop150[zoop150$WY != "error", ]
+zoop50 <- zoop50[zoop50$WY != "error", ]
+
+```
+
+calculate CPUE
+
+```{r calculate CPUE}
+#need to fix places in dataset where data is missing and CPUE can't be calculated
+
+#zoop50 issues:
+#STTD 12/13/16 is missing a count value. Will need to check with raw data to see if count value is there. 
+#raw zoop data says sample count is 1, subsample is 1- 12/30/20
+
+#zoop150 issues:
+#SHR 2/7/17 is missing EndMeter count. Checked data sheet and was not noted in the field. Need to replace using average or other technique.
+#some samples have a subsample value of NA. Will replace with 1.
+
+#how to remove record
+#zoop150 <- filter(zoop150, EndMeter !="NA")
+
+
+####fixing missing values
+
+#replacing missing values in 50 table
+zoop50$Count[is.na(zoop50$Count)] <- 1 
+zoop50$Subsample[is.na(zoop50$Subsample)] <- 1 
+
+#replace subsamples = NA with 1 in zoop150 table
+zoop150$Subsample[is.na(zoop150$Subsample)] <- 1 
+
+#seems like zoop50 table has duplicate rows, as when I fixed the missing count data, it matched an already existing row. Will remove duplicate rows for both datasets
+
+zoop50 <- zoop50 %>% distinct()
+zoop150 <- zoop150 %>% distinct()
+
+#zoop50 removed 2 and zoop150 had no row removed
+
+
+#replacing missing endmeter readings for zoop150 table, SHR 2/7/17
+#using Cat's table FM_ReplaceVals
+#2017 was a wet year, reg flow meter speed, and 150 net, so replacement value of flow meter spins is 3578
+
+zoop150$EndMeter <- ifelse(is.na(zoop150$EndMeter), (zoop150$StartMeter + 3758), zoop150$EndMeter)
+
+
+#zoop50
+
+zoop50$CPUE <-
+  #if Meso & low
+         ifelse(
+            (zoop50$Classification != "Microzooplankton_Nauplii" & zoop50$FlowMeterSpeed == 
+               "Low"), 
+                (
+                 (zoop50$Count/
+                   ((zoop50$SubMeso*zoop50$Subsample)/
+                      zoop50$VolMeso))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop50$EndMeter-zoop50$StartMeter)*57560)/
+                             999999))
+                ),
+        #if Meso & reg
+               ifelse(
+            (zoop50$Classification != "Microzooplankton_Nauplii" & zoop50$FlowMeterSpeed != 
+               "Low"), 
+                (
+                 (zoop50$Count/
+                   ((zoop50$SubMeso*zoop50$Subsample)/
+                      zoop50$VolMeso))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop50$EndMeter-zoop50$StartMeter)*26873)/
+                             999999))
+                ),
+         #if Micro & low
+         ifelse(
+            (zoop50$Classification == "Microzooplankton_Nauplii" & zoop50$FlowMeterSpeed == 
+               "Low"), 
+                (
+                 (zoop50$Count/
+                   ((zoop50$SubMicro*zoop50$Subsample)/
+                      zoop50$VolMicro))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop50$EndMeter-zoop50$StartMeter)*57560)/
+                             999999))
+                ),
+         #if Micro & reg
+           ifelse(
+            (zoop50$Classification == "Microzooplankton_Nauplii" & zoop50$FlowMeterSpeed != 
+               "Low"), 
+                (
+                 (zoop50$Count/
+                   ((zoop50$SubMicro*zoop50$Subsample)/
+                      zoop50$VolMicro))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop50$EndMeter-zoop50$StartMeter)*26873)/
+                             999999))
+                 ),
+                 "NA"))))
+
+#zoop150
+
+zoop150$CPUE <-
+  #if Meso & low
+         ifelse(
+            (zoop150$Classification != "Microzooplankton_Nauplii" & zoop150$FlowMeterSpeed == 
+               "Low"), 
+                (
+                 (zoop150$Count/
+                   ((zoop150$SubMeso*zoop150$Subsample)/
+                      zoop150$VolMeso))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop150$EndMeter-zoop150$StartMeter)*57560)/
+                             999999))
+                ),
+        #if Meso & reg
+               ifelse(
+            (zoop150$Classification != "Microzooplankton_Nauplii" & zoop150$FlowMeterSpeed != 
+               "Low"), 
+                (
+                 (zoop150$Count/
+                   ((zoop150$SubMeso*zoop150$Subsample)/
+                      zoop150$VolMeso))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop150$EndMeter-zoop150$StartMeter)*26873)/
+                             999999))
+                ),
+         #if Micro & low
+         ifelse(
+            (zoop150$Classification == "Microzooplankton_Nauplii" & zoop150$FlowMeterSpeed == 
+               "Low"), 
+                (
+                 (zoop150$Count/
+                   ((zoop150$SubMicro*zoop150$Subsample)/
+                      zoop150$VolMicro))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop150$EndMeter-zoop150$StartMeter)*57560)/
+                             999999))
+                ),
+         #if Micro & reg
+           ifelse(
+            (zoop150$Classification == "Microzooplankton_Nauplii" & zoop150$FlowMeterSpeed != 
+               "Low"), 
+                (
+                 (zoop150$Count/
+                   ((zoop150$SubMicro*zoop150$Subsample)/
+                      zoop150$VolMicro))/ 
+                        (((3.14*0.25)/4)*
+                          (((zoop150$EndMeter-zoop150$StartMeter)*26873)/
+                             999999))
+                 ),
+                 "NA"))))
+
+#make CPUE a numeric
+zoop150$CPUE <- as.numeric(zoop150$CPUE)
+zoop50$CPUE <- as.numeric(zoop50$CPUE)
+
+#round CPUE values
+#zoop150 <- zoop150 %>% mutate_at(vars(CPUE), funs(round(., 3)))
+  
+```
+
+```{r inundation data and add season}
+#read in data
+inundation <- read.csv("InundationWY2010toWY2019.csv", header = TRUE) 
+
+#change format of date column
+inundation$Date <- as.Date(inundation$Date, format = c("%m/%d/%Y"))
+
+#merge by date with zoop datasets
+zoop150 <- left_join(zoop150, inundation, by = "Date")
+
+zoop50 <- left_join(zoop50, inundation, by = "Date")
+
+
+#add in high vs. low inundation years
+#zoop150
+zoop150$InunMag<- ifelse(zoop150$WY == "WY19", "High", "Low")
+
+#zoop50
+zoop50$InunMag<- ifelse(zoop50$WY == "WY19", "High", "Low")
+
+
+#add in seasons
+#Season1 = October-April / May-September
+#zoop150
+zoop150$Season1<- ifelse(zoop150$Month == "10" | zoop150$Month == "11" | zoop150$Month == "12" | zoop150$Month == "01" | zoop150$Month == "02" | zoop150$Month == "03" | zoop150$Month == "04", "Oct-April", "May-Sept")
+
+#zoop50
+zoop50$Season1<- ifelse(zoop50$Month == "10" | zoop50$Month == "11" | zoop50$Month == "12" | zoop50$Month == "01" | zoop50$Month == "02" | zoop50$Month == "03" | zoop50$Month == "04", "Oct-April", "May-Sept")
+
+
+#Season2 = Dec-Feb/Mar-May/Jun-Aug/Sept-Nov
+#150
+zoop150$Season2<- ifelse(zoop150$Month == "01" | zoop150$Month == "02" | zoop150$Month == "03", "Winter", ifelse(zoop150$Month == "04" | zoop150$Month == "05" | zoop150$Month == "06", "Spring", ifelse(zoop150$Month == "07" | zoop150$Month == "08" | zoop150$Month == "09", "Summer", "Fall")))
+
+#50
+zoop50$Season2<- ifelse(zoop50$Month == "01" | zoop50$Month == "02" | zoop50$Month == "03", "Winter", ifelse(zoop50$Month == "04" | zoop50$Month == "05" | zoop50$Month == "06", "Spring", ifelse(zoop50$Month == "07" | zoop50$Month == "08" | zoop50$Month == "09", "Summer", "Fall")))
+
+
+#adding wet vs. average
+#zoop150
+zoop150$WY.Class<- ifelse(zoop150$WY == "WY17" | zoop150$WY == "WY19", "Wet", "Average")
+
+
+#limit inundation just to WY17-WY19
+inundation$WY<- ifelse(
+  inundation$Date >= "2016-10-01" & inundation$Date <= "2017-09-30", "WY17",
+    ifelse(inundation$Date >= "2017-10-01" & inundation$Date <= "2018-09-30", "WY18",
+     ifelse(inundation$Date >= "2018-10-01" & inundation$Date <= "2019-09-30", "WY19", 
+     "error")))
+
+inundation <- inundation[inundation$WY != "error", ]
+
+```
+
+QC data for minimum number of spins
+```{r flow meter spins QC}
+zoop150$flow_diff <- (zoop150$EndMeter - zoop150$StartMeter)
+zoop50$flow_diff <- (zoop50$EndMeter - zoop50$StartMeter)
+
+#adding a pass or fail rating for flow meter counts. Fail: zoop150 < 800, zoop50 <200
+zoop150$flow_diff_rating <- ifelse(zoop150$flow_diff < 800, "Fail", "Pass")
+sum(zoop150$flow_diff_rating == "Fail")
+#207 records < 800
+
+zoop50$flow_diff_rating <- ifelse(zoop50$flow_diff < 200, "Fail", "Pass")
+sum(zoop50$flow_diff_rating == "Fail")
+#124 records < 200
+
+```
+
+
+```{r testing normality and running ANOVA}
+
+#sum CPUE for each day
+zoop150.sum.ANOVA <- zoop150 %>% 
+  group_by(Date, Station.Code, Inundation, WY) %>% summarize(daily.CPUE = sum(CPUE))
+
+zoop150.sum.ANOVA$log.CPUE <- log(zoop150.sum.ANOVA$daily.CPUE)+1
+
+hist(zoop150.sum.ANOVA$log.CPUE)
+
+zoop150.sum.ANOVA$WY <- as.factor(zoop150.sum.ANOVA$WY)
+
+m1 <- lm(log.CPUE ~ Station.Code*WY, data = zoop150.sum.ANOVA)
+anova(m1)
+plot(m1)
+```
+
+Some initial plots to look at overall patterns
+
+```{r prelim plots}
+####150um plots####
+
+#change the order of the station codes
+zoop150$Station.Code_f = factor(zoop150$Station.Code, levels = c( "STTD", "SHR"))
+
+
+#sum by class and site (plota and plotb)
+
+#sum by class, site and WY (plotc and plotd)
+
+
+#bar plot of CPUE with date on x and cpue on y faceted by Classification and site
+plota<- ggplot(zoop150, aes(x = Date, y = CPUE, fill = Station.Code_f)) +
+  geom_bar(stat = "identity") +
+  facet_grid(Station.Code_f ~ Classification, scales = "free_y") 
+
+plota
+
+
+#bar plot of CPUE with date on x and cpue on y faceted by Classification so that site is side by side
+plotb<- ggplot(zoop150, aes(x = Date, y = CPUE, fill = Station.Code_f)) +
+  geom_bar(stat = "identity") +
+  facet_grid( ~ Classification, scales = "free_y") 
+
+plotb
+
+
+#bar plot with all years, date on x cpue on y faceted by classification and year
+
+plotc <-
+  ggplot(zoop150, aes(x = Date, y = log(CPUE), fill = Station.Code_f)) +
+  geom_bar(stat = "identity") +
+  facet_grid(WY ~ Classification, scales = "free_y") +
+  scale_x_date(date_breaks = "6 months") +
+  theme(axis.text.x = element_text(angle=90))
+
+plotc
+
+
+#bar plot with all years, date on x cpue on y faceted by station and class
+
+plotd <-
+  ggplot(zoop150, aes(x = Date, y = CPUE, fill = WY)) +
+  geom_bar(stat = "identity") +
+  facet_grid(Station.Code_f ~ Classification, scales = "free_y") +
+  scale_x_date(date_breaks = "6 months") +
+  theme(axis.text.x = element_text(angle=90))
+
+plotd
+
+####Bar Plots####
+#sum total CPUE by WY and plot
+
+#, labels = date_format("%m")
+
+#bar plot of 2017 CPUE with date on x and cpue on y faceted by classification. could limit from January - December
+barplot2017 <- 
+  ggplot(subset(zoop150, Year %in% 2017), aes(x = Date, y = log(CPUE), fill = Station.Code_f)) + 
+  geom_bar(stat = "identity") +
+  facet_grid( ~ Classification, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_x_date(date_labels = "%b")
+
+barplot2017
+
+#2018
+barplot2018 <- 
+  ggplot(subset(zoop150, Year %in% 2018), aes(x = Date, y = log(CPUE), fill = Station.Code_f)) + 
+  geom_bar(stat = "identity") +
+  facet_grid( ~ Classification, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_x_date(date_labels = "%b")
+
+barplot2018
+
+
+###*this plot in report*###
+#barplot using inundation and mean daily CPUE
+
+#mean daily CPUE calculation
+#sum CPUE for each day
+zoop150.sum <- zoop150 %>% 
+  group_by(Date, Station.Code, WY, WY.Class) %>% summarize(daily.CPUE = sum(CPUE))
+
+#average by water year
+zoop150.sum.WY <- zoop150.sum %>% 
+  group_by(Station.Code, WY, WY.Class) %>% summarize(Avg.CPUE = mean(daily.CPUE, na.rm = TRUE),
+            sdCPUE = sd(daily.CPUE, na.rm = TRUE),
+            n = n(),
+            se = sdCPUE/sqrt(n))
+
+#plot with mean daily CPUE and WY
+barplot.WY <- 
+  ggplot(zoop150.sum.WY, aes(x = WY, y = Avg.CPUE, fill = WY.Class)) + 
+  geom_bar(stat = "identity") +
+  geom_errorbar(aes(ymin = Avg.CPUE-se, ymax = Avg.CPUE + se), width = .2)+
+  facet_grid( ~ Station.Code, scales = "free_y") +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_bw() +  
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14), strip.text = element_text(size = 13), axis.text.x =    element_text(angle = 90), legend.title = element_text(size = 12), legend.text = element_text(size = 12), legend.position = "top") +
+  labs(x = "Water Year", y = expression("Mean Daily Zooplankton CPUE" ~ " " ~(count/m^3)), fill = "Water Year Class")
+
+barplot.WY
+
+
+###*this plot in report*###
+#barplot using log mean daily CPUE for inundation and non-inundation faceted by class
+
+#add up STTD 150 so it can be faceted by class and inundation
+#no SHR
+zoop150.STTD <- subset(zoop150, Station.Code == "STTD")
+
+#sum CPUE for each day
+zoop150.STTD.sum2 <- zoop150.STTD %>% 
+  group_by(Date, Inundation, Classification) %>% summarize(daily.CPUE = sum(CPUE))
+
+#average CPUE for each class and inundation
+zoop150.STTD.class <- zoop150.STTD.sum2 %>% 
+  group_by(Inundation, Classification) %>% summarize(Avg.CPUE = mean(daily.CPUE))
+
+#create new facet names
+class.labs <- c("Calanoids", "Cladocera", "Cyclopoids", "Harpacticoids", "Microzooplankton and Nauplii")
+names(class.labs) <- c("Calanoids", "Cladocera", "Cyclopoids", "Harpacticoids", "Microzooplankton_Nauplii")
+
+#plot with classifications and mean daily CPUE
+barplot.inun <- 
+  ggplot(zoop150.STTD.class, aes(x = Inundation, y = (log10(Avg.CPUE)+1), fill = Inundation)) + 
+  geom_bar(stat = "identity") +
+  facet_grid( ~ Classification, scales = "free_y", labeller = labeller(Classification = class.labs)) +
+  scale_fill_viridis(discrete = TRUE) +
+  theme_bw()+
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14), strip.text = element_text(size = 13), axis.text.x = element_text( size = 12),legend.position = "none") +
+  scale_x_discrete(labels = c("FALSE" = "Non-inundation", "TRUE" = "Inundation")) +
+  labs(x = "Inundation State", y = expression("Log Mean Daily Zooplankton CPUE" ~ " " ~ (count/m^3)))
+
+barplot.inun
+
+
+####Line Plot####
+
+###*this plot in report*###
+#line plot with inundation shaded
+#sum daily CPUE for both sites
+zoop150.sum1 <- zoop150 %>% 
+  group_by(Date, WY) %>% summarize(daily.CPUE = sum(CPUE))
+
+#set colors and size of columns 
+inundation$color = ifelse(inundation$Inundation == TRUE, "Inundation", "No Inundation")
+colors <- data.frame(Inundation = c("Inundation", "No Inundation"), Color = c("light blue", "white"))
+inundation$Inundation_n = ifelse(inundation$Inundation == "TRUE", 300000, 0)
+
+#plot
+inun.zoop.all <- ggplot() +
+  geom_col(data = inundation, aes(x = Date, y = Inundation_n), color = "light blue") +
+  geom_line(data = zoop150.sum1, aes(x = Date, y = daily.CPUE)) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
+  labs(y = expression(CPUE~(Count~m^-3))) +
+  theme_bw()+
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14), strip.text = element_text(size = 13), axis.text.x = element_text( size = 12, angle = 90), legend.position = "none") 
+
+inun.zoop.all
+```
+
+```{r Haley's Species Composition Graphs }
+
+#stacked bar plot by classification
+speciescomp <- ggplot(zoop150, aes(x=Station.Code, y=CPUE, fill=Classification)) + geom_bar(stat="identity", position="stack") + facet_grid( ~ WY, scales = "free_y") +
+scale_fill_manual(values=c("#cc6677","#332288","#117733", "#44AA99", "#999933", "#882255")) +labs(y = "Catch Per Unit Effort", x = "Station") +
+  theme(panel.grid.major = element_line(colour = "gray93",size=0.01), panel.grid.minor = element_blank()) + #stylist choice, you can mess with this or not include it at all to stay with the R default
+labs(colour = "Site") + theme(axis.text.x = element_text(angle = 60, hjust = 1)) + labs(fill = "Classification")
+
+speciescomp
+
+
+#Species Composition by Organism 
+#Calculate Percentage 
+zoop_sum_WY_Site_Org <- zoop150 %>% group_by(Organism, WY, Station.Code) %>% summarize(sumCPUE = sum(CPUE))
+
+zoop_sum_WY_Site <- zoop_sum_WY_Site_Org %>% group_by(WY, Station.Code) %>% summarize(totalCPUE = sum(sumCPUE))
+
+zoop_percent<-merge(zoop_sum_WY_Site_Org,zoop_sum_WY_Site, by =c("Station.Code", "WY"))
+
+zoop_percent$percent <- (zoop_percent$sumCPUE / zoop_percent$totalCPUE) * 100
+
+
+#Above or Below 3%? and reassign organism name to other if less than 3%
+zoop_percent$Org2 <- ifelse(zoop_percent$percent >= 3, zoop_percent$Organism, "Other")
+
+
+#Composition by Organism Graph
+speciescomporg <- ggplot(zoop_percent, aes(x= WY, y=sumCPUE, fill=Org2)) + 
+  geom_bar(stat="identity", position="fill") +
+  scale_fill_viridis(discrete = TRUE) + 
+  facet_grid( ~ Station.Code, scales = "free_y") +
+  labs(y = "Proportional Catch Per Unit Effor", x = "Water Year") +
+  theme_bw()+
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14), strip.text = element_text(size = 13), axis.text.x = element_text( size = 12, angle = 90), legend.title = element_blank())
+
+speciescomporg
+
+
+```
+
+
+```{r nmds plots}
+#load vegan
+library(vegan)
+
+###trying to plot the nmds1 using Rosie's code (plotNMDS.rmd)
+#run Rosie's plotNMDS code to create all NMDS plots
+#copy of code needs to be in working folder
+#plotNMDS code has 2 functions: PlotNMDS and PlotNMDS2. PlotNMDS adds centriods to plot and colors by group of interest. PlotNMDS2 adds topo lines to NMDS plot
+source("plotNMDS.r")
+
+#make copy of zoop_NDFA to modify for NMDS
+zoop150_NMDS <- zoop150
+zoop50_NMDS <- zoop50
+
+###~~~150~~~###
+#by Organism
+#Faster way:
+zoop150_NMDS_org = select(zoop150_NMDS, WY, Station.Code, Date, Month, Inundation, InunMag, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip150.org <- spread(data=zoop150_NMDS_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop150_org = all.flip150.org[14:84]
+Zoop150_org.env = all.flip150.org[1:13]
+
+#change to matrix for vegan
+m.Zoop150_org <- as.matrix(Zoop150_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds150.org <- metaMDS(m.Zoop150_org, distance = "bray", trymax = 500)
+
+plot(nmds150.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop150_org.env$Station.Code = as.factor(Zoop150_org.env$Station.Code)
+Zoop150_org.env$WY = as.factor(Zoop150_org.env$WY)
+Zoop150_org.env$Inundation = as.factor(Zoop150_org.env$Inundation)
+Zoop150_org.env$InunMag = as.factor(Zoop150_org.env$InunMag)
+Zoop150_org.env$Season1 = as.factor(Zoop150_org.env$Season1)
+Zoop150_org.env$Season2 = as.factor(Zoop150_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot150.station <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "Station.Code", textp = FALSE)
+
+plot150.WY <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "WY", textp = FALSE)
+
+plot150.inun <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "Inundation", textp = FALSE)
+
+plot150.inunmag <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "InunMag", textp = FALSE)
+
+plot150.seas1 <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "Season1", textp = FALSE)
+
+plot150.seas2 <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "Season2", textp = FALSE)
+
+###~~~50~~~###
+#by Organism
+#Faster way:
+zoop50_NMDS_org = select(zoop50_NMDS, WY, Station.Code, Date, Month, Inundation, InunMag, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip50.org <- spread(data=zoop50_NMDS_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop50_org = all.flip50.org[14:67]
+Zoop50_org.env = all.flip50.org[1:13]
+
+#change to matrix for vegan
+m.Zoop50_org <- as.matrix(Zoop50_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds50.org <- metaMDS(m.Zoop50_org, distance = "bray", trymax = 500)
+
+plot(nmds50.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop50_org.env$Station.Code = as.factor(Zoop50_org.env$Station.Code)
+Zoop50_org.env$WY = as.factor(Zoop50_org.env$WY)
+Zoop50_org.env$Inundation = as.factor(Zoop50_org.env$Inundation)
+Zoop50_org.env$InunMag = as.factor(Zoop50_org.env$InunMag)
+Zoop50_org.env$Season1 = as.factor(Zoop50_org.env$Season1)
+Zoop50_org.env$Season2 = as.factor(Zoop50_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot50.station <- PlotNMDS(nmds50.org, Zoop50_org.env, group = "Station.Code", textp = FALSE)
+
+plot50.WY <- PlotNMDS(nmds50.org, Zoop50_org.env, group = "WY", textp = FALSE)
+
+plot50.inun <- PlotNMDS(nmds50.org, Zoop50_org.env, group = "Inundation", textp = FALSE)
+
+plot50.inunmag <- PlotNMDS(nmds50.org, Zoop50_org.env, group = "InunMag", textp = FALSE)
+
+plot50.seas1 <- PlotNMDS(nmds50.org, Zoop50_org.env, group = "Season1", textp = FALSE)
+
+plot50.seas2 <- PlotNMDS(nmds50.org, Zoop50_org.env, group = "Season2", textp = FALSE)
+
+
+#subset by station
+###~~~STTD~~~###
+#by Organism
+#150
+zoop150_NMDS.STTD <- subset(zoop150_NMDS, Station.Code == "STTD")
+
+#Faster way:
+zoop150_NMDS.STTD_org = select(zoop150_NMDS.STTD, WY, Date, Month, Inundation, InunMag, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip150.STTD.org <- spread(data=zoop150_NMDS.STTD_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop150.STTD_org = all.flip150.STTD.org[13:74]
+Zoop150.STTD_org.env = all.flip150.STTD.org[1:12]
+
+#change to matrix for vegan
+m.Zoop150.STTD_org <- as.matrix(Zoop150.STTD_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds150.STTD.org <- metaMDS(m.Zoop150.STTD_org, distance = "bray", trymax = 500)
+
+plot(nmds150.STTD.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop150.STTD_org.env$Month = as.factor(Zoop150.STTD_org.env$Month)
+Zoop150.STTD_org.env$WY = as.factor(Zoop150.STTD_org.env$WY)
+Zoop150.STTD_org.env$Inundation = as.factor(Zoop150.STTD_org.env$Inundation)
+Zoop150.STTD_org.env$InunMag = as.factor(Zoop150.STTD_org.env$InunMag)
+Zoop150.STTD_org.env$Season1 = as.factor(Zoop150.STTD_org.env$Season1)
+Zoop150.STTD_org.env$Season2 = as.factor(Zoop150.STTD_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot150.STTD.Month <- PlotNMDS(nmds150.STTD.org, Zoop150.STTD_org.env, group = "Month", textp = FALSE)
+
+plot150.STTD.WY <- PlotNMDS(nmds150.STTD.org, Zoop150.STTD_org.env, group = "WY", textp = FALSE)
+
+plot150.STTD.inun <- PlotNMDS(nmds150.STTD.org, Zoop150.STTD_org.env, group = "Inundation", textp = FALSE)
+
+plot150.STTD.inunmag <- PlotNMDS(nmds150.STTD.org, Zoop150.STTD_org.env, group = "InunMag", textp = FALSE)
+
+plot150.STTD.seas1 <- PlotNMDS(nmds150.STTD.org, Zoop150.STTD_org.env, group = "Season1", textp = FALSE)
+
+plot150.STTD.seas2 <- PlotNMDS(nmds150.STTD.org, Zoop150.STTD_org.env, group = "Season2", textp = FALSE)
+
+
+###~~~SHR~~~###
+#by Organism
+#150
+zoop150_NMDS.SHR <- subset(zoop150_NMDS, Station.Code == "SHR")
+
+#Faster way:
+zoop150_NMDS.SHR_org = select(zoop150_NMDS.SHR, WY, Date, Month, Inundation, InunMag, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip150.SHR.org <- spread(data=zoop150_NMDS.SHR_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop150.SHR_org = all.flip150.SHR.org[13:73]
+Zoop150.SHR_org.env = all.flip150.SHR.org[1:12]
+
+#change to matrix for vegan
+m.Zoop150.SHR_org <- as.matrix(Zoop150.SHR_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds150.SHR.org <- metaMDS(m.Zoop150.SHR_org, distance = "bray", trymax = 500)
+
+plot(nmds150.SHR.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop150.SHR_org.env$Month = as.factor(Zoop150.SHR_org.env$Month)
+Zoop150.SHR_org.env$WY = as.factor(Zoop150.SHR_org.env$WY)
+Zoop150.SHR_org.env$Inundation = as.factor(Zoop150.SHR_org.env$Inundation)
+Zoop150.SHR_org.env$InunMag = as.factor(Zoop150.SHR_org.env$InunMag)
+Zoop150.SHR_org.env$Season1 = as.factor(Zoop150.SHR_org.env$Season1)
+Zoop150.SHR_org.env$Season2 = as.factor(Zoop150.SHR_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot150.SHR.Month <- PlotNMDS(nmds150.SHR.org, Zoop150.SHR_org.env, group = "Month", textp = FALSE)
+
+plot150.SHR.WY <- PlotNMDS(nmds150.SHR.org, Zoop150.SHR_org.env, group = "WY", textp = FALSE)
+
+plot150.SHR.inun <- PlotNMDS(nmds150.SHR.org, Zoop150.SHR_org.env, group = "Inundation", textp = FALSE)
+
+plot150.SHR.inunmag <- PlotNMDS(nmds150.SHR.org, Zoop150.SHR_org.env, group = "InunMag", textp = FALSE)
+
+plot150.SHR.seas1 <- PlotNMDS(nmds150.SHR.org, Zoop150.SHR_org.env, group = "Season1", textp = FALSE)
+
+plot150.SHR.seas2 <- PlotNMDS(nmds150.SHR.org, Zoop150.SHR_org.env, group = "Season2", textp = FALSE)
+
+
+#subset by station
+###~~~STTD~~~###
+#by Organism
+#50
+zoop50_NMDS.STTD <- subset(zoop50_NMDS, Station.Code == "STTD")
+
+#Faster way:
+zoop50_NMDS.STTD_org = select(zoop50_NMDS.STTD, WY, Date, Month, Inundation, InunMag, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip50.STTD.org <- spread(data=zoop50_NMDS.STTD_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop50.STTD_org = all.flip50.STTD.org[13:61]
+Zoop50.STTD_org.env = all.flip50.STTD.org[1:12]
+
+#change to matrix for vegan
+m.Zoop50.STTD_org <- as.matrix(Zoop50.STTD_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds50.STTD.org <- metaMDS(m.Zoop50.STTD_org, distance = "bray", trymax = 500)
+
+plot(nmds50.STTD.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop50.STTD_org.env$Month = as.factor(Zoop50.STTD_org.env$Month)
+Zoop50.STTD_org.env$WY = as.factor(Zoop50.STTD_org.env$WY)
+Zoop50.STTD_org.env$Inundation = as.factor(Zoop50.STTD_org.env$Inundation)
+Zoop50.STTD_org.env$InunMag = as.factor(Zoop50.STTD_org.env$InunMag)
+Zoop50.STTD_org.env$Season1 = as.factor(Zoop50.STTD_org.env$Season1)
+Zoop50.STTD_org.env$Season2 = as.factor(Zoop50.STTD_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot50.STTD.Month <- PlotNMDS(nmds50.STTD.org, Zoop50.STTD_org.env, group = "Month", textp = FALSE)
+
+plot50.STTD.WY <- PlotNMDS(nmds50.STTD.org, Zoop50.STTD_org.env, group = "WY", textp = FALSE)
+
+plot50.STTD.inun <- PlotNMDS(nmds50.STTD.org, Zoop50.STTD_org.env, group = "Inundation", textp = FALSE)
+
+plot50.STTD.inunmag <- PlotNMDS(nmds50.STTD.org, Zoop50.STTD_org.env, group = "InunMag", textp = FALSE)
+
+plot50.STTD.seas1 <- PlotNMDS(nmds50.STTD.org, Zoop50.STTD_org.env, group = "Season1", textp = FALSE)
+
+plot50.STTD.seas2 <- PlotNMDS(nmds50.STTD.org, Zoop50.STTD_org.env, group = "Season2", textp = FALSE)
+
+
+###~~~SHR~~~###
+#by Organism
+#50
+zoop50_NMDS.SHR <- subset(zoop50_NMDS, Station.Code == "SHR")
+
+#Faster way:
+zoop50_NMDS.SHR_org = select(zoop50_NMDS.SHR, WY, Date, Month, Inundation, InunMag, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip50.SHR.org <- spread(data=zoop50_NMDS.SHR_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop50.SHR_org = all.flip50.SHR.org[13:62]
+Zoop50.SHR_org.env = all.flip50.SHR.org[1:12]
+
+#change to matrix for vegan
+m.Zoop50.SHR_org <- as.matrix(Zoop50.SHR_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds50.SHR.org <- metaMDS(m.Zoop50.SHR_org, distance = "bray", trymax = 500)
+
+plot(nmds50.SHR.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop50.SHR_org.env$Month = as.factor(Zoop50.SHR_org.env$Month)
+Zoop50.SHR_org.env$WY = as.factor(Zoop50.SHR_org.env$WY)
+Zoop50.SHR_org.env$Inundation = as.factor(Zoop50.SHR_org.env$Inundation)
+Zoop50.SHR_org.env$InunMag = as.factor(Zoop50.SHR_org.env$InunMag)
+Zoop50.SHR_org.env$Season1 = as.factor(Zoop50.SHR_org.env$Season1)
+Zoop50.SHR_org.env$Season2 = as.factor(Zoop50.SHR_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot50.SHR.Month <- PlotNMDS(nmds50.SHR.org, Zoop50.SHR_org.env, group = "Month", textp = FALSE)
+
+plot50.SHR.WY <- PlotNMDS(nmds50.SHR.org, Zoop50.SHR_org.env, group = "WY", textp = FALSE)
+
+plot50.SHR.inun <- PlotNMDS(nmds50.SHR.org, Zoop50.SHR_org.env, group = "Inundation", textp = FALSE)
+
+plot50.SHR.inunmag <- PlotNMDS(nmds50.SHR.org, Zoop50.SHR_org.env, group = "InunMag", textp = FALSE)
+
+plot50.SHR.seas1 <- PlotNMDS(nmds50.SHR.org, Zoop50.SHR_org.env, group = "Season1", textp = FALSE)
+
+plot50.SHR.seas2 <- PlotNMDS(nmds50.SHR.org, Zoop50.SHR_org.env, group = "Season2", textp = FALSE)
+
+
+#subset by WY
+###~~~WY17~~~###
+#by Organism
+#150
+zoop150_NMDS.WY17 <- subset(zoop150_NMDS, WY == "WY17")
+
+#Faster way:
+zoop150_NMDS.WY17_org = select(zoop150_NMDS.WY17, Station.Code, Date, Month, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip150.WY17.org <- spread(data=zoop150_NMDS.WY17_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop150.WY17_org = all.flip150.WY17.org[11:68]
+Zoop150.WY17_org.env = all.flip150.WY17.org[1:10]
+
+#change to matrix for vegan
+m.Zoop150.WY17_org <- as.matrix(Zoop150.WY17_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds150.WY17.org <- metaMDS(m.Zoop150.WY17_org, distance = "bray", trymax = 1500)
+
+plot(nmds150.WY17.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop150.WY17_org.env$Station.Code = as.factor(Zoop150.WY17_org.env$Station.Code)
+Zoop150.WY17_org.env$Season1 = as.factor(Zoop150.WY17_org.env$Season1)
+Zoop150.WY17_org.env$Season2 = as.factor(Zoop150.WY17_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot150.WY17.station <- PlotNMDS(nmds150.WY17.org, Zoop150.WY17_org.env, group = "Station.Code", textp = FALSE)
+
+plot150.WY17.seas1 <- PlotNMDS(nmds150.WY17.org, Zoop150.WY17_org.env, group = "Season1", textp = FALSE)
+
+plot150.WY17.seas2 <- PlotNMDS(nmds150.WY17.org, Zoop150.WY17_org.env, group = "Season2", textp = FALSE)
+
+
+#50
+zoop50_NMDS.WY17 <- subset(zoop50_NMDS, WY == "WY17")
+
+#Faster way:
+zoop50_NMDS.WY17_org = select(zoop50_NMDS.WY17, Station.Code, Date, Month, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip50.WY17.org <- spread(data=zoop50_NMDS.WY17_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop50.WY17_org = all.flip50.WY17.org[11:54]
+Zoop50.WY17_org.env = all.flip50.WY17.org[1:10]
+
+#change to matrix for vegan
+m.Zoop50.WY17_org <- as.matrix(Zoop50.WY17_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds50.WY17.org <- metaMDS(m.Zoop50.WY17_org, distance = "bray", trymax = 1500)
+
+plot(nmds50.WY17.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop50.WY17_org.env$Station.Code = as.factor(Zoop50.WY17_org.env$Station.Code)
+Zoop50.WY17_org.env$Season1 = as.factor(Zoop50.WY17_org.env$Season1)
+Zoop50.WY17_org.env$Season2 = as.factor(Zoop50.WY17_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot50.WY17.station <- PlotNMDS(nmds50.WY17.org, Zoop50.WY17_org.env, group = "Station.Code", textp = FALSE)
+
+plot50.WY17.seas1 <- PlotNMDS(nmds50.WY17.org, Zoop50.WY17_org.env, group = "Season1", textp = FALSE)
+
+plot50.WY17.seas2 <- PlotNMDS(nmds50.WY17.org, Zoop50.WY17_org.env, group = "Season2", textp = FALSE)
+
+
+###~~~WY18~~~###
+#by Organism
+#150
+zoop150_NMDS.WY18 <- subset(zoop150_NMDS, WY == "WY18")
+
+#Faster way:
+zoop150_NMDS.WY18_org = select(zoop150_NMDS.WY18, Station.Code, Date, Month, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip150.WY18.org <- spread(data=zoop150_NMDS.WY18_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop150.WY18_org = all.flip150.WY18.org[11:68]
+Zoop150.WY18_org.env = all.flip150.WY18.org[1:10]
+
+#change to matrix for vegan
+m.Zoop150.WY18_org <- as.matrix(Zoop150.WY18_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds150.WY18.org <- metaMDS(m.Zoop150.WY18_org, distance = "bray", trymax = 1500)
+
+plot(nmds150.WY18.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop150.WY18_org.env$Station.Code = as.factor(Zoop150.WY18_org.env$Station.Code)
+Zoop150.WY18_org.env$Season1 = as.factor(Zoop150.WY18_org.env$Season1)
+Zoop150.WY18_org.env$Season2 = as.factor(Zoop150.WY18_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot150.WY18.station <- PlotNMDS(nmds150.WY18.org, Zoop150.WY18_org.env, group = "Station.Code", textp = FALSE)
+
+plot150.WY18.seas1 <- PlotNMDS(nmds150.WY18.org, Zoop150.WY18_org.env, group = "Season1", textp = FALSE)
+
+plot150.WY18.seas2 <- PlotNMDS(nmds150.WY18.org, Zoop150.WY18_org.env, group = "Season2", textp = FALSE)
+
+
+#50
+zoop50_NMDS.WY18 <- subset(zoop50_NMDS, WY == "WY18")
+
+#Faster way:
+zoop50_NMDS.WY18_org = select(zoop50_NMDS.WY18, Station.Code, Date, Month, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip50.WY18.org <- spread(data=zoop50_NMDS.WY18_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop50.WY18_org = all.flip50.WY18.org[11:39]
+Zoop50.WY18_org.env = all.flip50.WY18.org[1:10]
+
+#change to matrix for vegan
+m.Zoop50.WY18_org <- as.matrix(Zoop50.WY18_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds50.WY18.org <- metaMDS(m.Zoop50.WY18_org, distance = "bray", trymax = 1500)
+
+plot(nmds50.WY18.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop50.WY18_org.env$Station.Code = as.factor(Zoop50.WY18_org.env$Station.Code)
+Zoop50.WY18_org.env$Season1 = as.factor(Zoop50.WY18_org.env$Season1)
+Zoop50.WY18_org.env$Season2 = as.factor(Zoop50.WY18_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot50.WY18.station <- PlotNMDS(nmds50.WY18.org, Zoop50.WY18_org.env, group = "Station.Code", textp = FALSE)
+
+plot50.WY18.seas1 <- PlotNMDS(nmds50.WY18.org, Zoop50.WY18_org.env, group = "Season1", textp = FALSE)
+
+plot50.WY18.seas2 <- PlotNMDS(nmds50.WY18.org, Zoop50.WY18_org.env, group = "Season2", textp = FALSE)
+
+
+###~~~WY19~~~###
+#by Organism
+#150
+zoop150_NMDS.WY19 <- subset(zoop150_NMDS, WY == "WY19")
+
+#Faster way:
+zoop150_NMDS.WY19_org = select(zoop150_NMDS.WY19, Station.Code, Date, Month, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip150.WY19.org <- spread(data=zoop150_NMDS.WY19_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop150.WY19_org = all.flip150.WY19.org[11:65]
+Zoop150.WY19_org.env = all.flip150.WY19.org[1:10]
+
+#change to matrix for vegan
+m.Zoop150.WY19_org <- as.matrix(Zoop150.WY19_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds150.WY19.org <- metaMDS(m.Zoop150.WY19_org, distance = "bray", trymax = 1500)
+
+plot(nmds150.WY19.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop150.WY19_org.env$Station.Code = as.factor(Zoop150.WY19_org.env$Station.Code)
+Zoop150.WY19_org.env$Season1 = as.factor(Zoop150.WY19_org.env$Season1)
+Zoop150.WY19_org.env$Season2 = as.factor(Zoop150.WY19_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot150.WY19.station <- PlotNMDS(nmds150.WY19.org, Zoop150.WY19_org.env, group = "Station.Code", textp = FALSE)
+
+plot150.WY19.seas1 <- PlotNMDS(nmds150.WY19.org, Zoop150.WY19_org.env, group = "Season1", textp = FALSE)
+
+plot150.WY19.seas2 <- PlotNMDS(nmds150.WY19.org, Zoop150.WY19_org.env, group = "Season2", textp = FALSE)
+
+
+#50
+zoop50_NMDS.WY19 <- subset(zoop50_NMDS, WY == "WY19")
+
+#Faster way:
+zoop50_NMDS.WY19_org = select(zoop50_NMDS.WY19, Station.Code, Date, Month, Season1, Season2, WaterTemperature, SecchiDiskDepth, SpCnd, pH, Turbidity, Organism, CPUE)
+
+#spread data
+all.flip50.WY19.org <- spread(data=zoop50_NMDS.WY19_org, key = Organism, value= CPUE, fill = 0)
+
+#select columns for abundance data and environmental data
+Zoop50.WY19_org = all.flip50.WY19.org[11:60]
+Zoop50.WY19_org.env = all.flip50.WY19.org[1:10]
+
+#change to matrix for vegan
+m.Zoop50.WY19_org <- as.matrix(Zoop50.WY19_org)
+
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+nmds50.WY19.org <- metaMDS(m.Zoop50.WY19_org, distance = "bray", trymax = 1500)
+
+plot(nmds50.WY19.org)
+
+#variables need to be factors in order to work to make centroids in Rosie's plotNMDS code
+Zoop50.WY19_org.env$Station.Code = as.factor(Zoop50.WY19_org.env$Station.Code)
+Zoop50.WY19_org.env$Season1 = as.factor(Zoop50.WY19_org.env$Season1)
+Zoop50.WY19_org.env$Season2 = as.factor(Zoop50.WY19_org.env$Season2)
+
+#Rosie's plotNMDS code for report figures
+plot50.WY19.station <- PlotNMDS(nmds50.WY19.org, Zoop50.WY19_org.env, group = "Station.Code", textp = FALSE)
+
+plot50.WY19.seas1 <- PlotNMDS(nmds50.WY19.org, Zoop50.WY19_org.env, group = "Season1", textp = FALSE)
+
+plot50.WY19.seas2 <- PlotNMDS(nmds50.WY19.org, Zoop50.WY19_org.env, group = "Season2", textp = FALSE)
+```
+
+```{r t-test on inundation}
+#run t-test on each net subset between inundated vs. non-inundated
+
+#subset by inundation
+#use STTD only data that was made above in the prelim plots, bar graphs section
+#sum zoop150 by day, leave in Inundation
+#sum CPUE for each day
+zoop150.STTD.sum3 <- zoop150.STTD %>% 
+  group_by(Date, Inundation) %>% summarize(daily.CPUE = sum(CPUE))
+
+#change inundation to a number and subset to put into ttest
+zoop150.STTD.sum3$Inundation_num <- as.numeric(zoop150.STTD.sum3$Inundation)
+zoop150.STTD.sum3.inun <- subset(zoop150.STTD.sum3, Inundation_num == 1)
+zoop150.STTD.sum3.non <- subset(zoop150.STTD.sum3, Inundation_num == 0)
+
+zoop150.STTD.sum3.inun <-zoop150.STTD.sum3.inun$daily.CPUE
+zoop150.STTD.sum3.non <-zoop150.STTD.sum3.non$daily.CPUE
+
+#run ttest
+#welches ttest takes into account unequal data
+ttest_150 <-t.test(zoop150.STTD.sum3.inun,zoop150.STTD.sum3.non)
+#t = -2.0987, df = 1430.3, p-value = 0.0361 
+```
+
+
+```{r PERMANOVA}
+
+#running PERMANOVA in R
+#using code from Cat and fish team
+#use zoop.150 as data file to analyze
+
+#use all variables
+#right of tilda are predictor variables that should come from environmental matrix
+#to the left of tilda is the CPUE matrix and is the response variable
+
+#create matrices
+#no inundation because it's both sites
+zoop.150.permanova = select(zoop150, Date, WY, Station.Code, Organism, Season2, CPUE)
+
+#spread the data so that TaxonName are the column headers, CPUE is the cell value, and sitedate is the row names
+#replace NAs with 0s
+#Rosie's note: You can do this within your "spread" call by assigning "fill = 0"
+all.flip.permanova <- spread(data=zoop.150.permanova, key = Organism, value= CPUE, fill = 0)
+
+#extract columns with abundance info to create matrix for PERMANOVA
+Zoop.permanova = all.flip.permanova[5:75]
+
+#extract columns to create environmental matrix
+Zoop.permanova.env = all.flip.permanova[1:4]
+
+#run PERMANOVA in adonis 
+(perm.org <- adonis(Zoop.permanova ~ Station.Code + WY + Season2, data = Zoop.permanova.env, method = "bray", permutations = 99))
+
+#with interactions
+(perm.org.interact <- adonis(Zoop.permanova ~ WY*Season2 + Station.Code*WY + Season2*Station.Code, data = Zoop.permanova.env, method = "bray", permutations = 99))
+
+#different interactions
+(perm.org.interact2 <- adonis(Zoop.permanova ~ Season2 + Station.Code + WY + Station.Code:Season2 + WY:Station.Code, data = Zoop.permanova.env, method = "bray", permutations = 99))
+
+#STTD only
+#create matrices
+#inundation because it's just STTD
+zoop.150.STTD.permanova = select(zoop150.STTD, Date, WY, Station.Code, Organism, Inundation, Season2, CPUE)
+
+#spread the data so that TaxonName are the column headers, CPUE is the cell value, and sitedate is the row names
+#replace NAs with 0s
+#Rosie's note: You can do this within your "spread" call by assigning "fill = 0"
+all.flip.permanova.STTD <- spread(data=zoop.150.STTD.permanova, key = Organism, value= CPUE, fill = 0)
+
+#extract columns with abundance info to create matrix for PERMANOVA
+Zoop.permanova.STTD = all.flip.permanova.STTD[6:67]
+
+#extract columns to create environmental matrix
+Zoop.permanova.STTD.env = all.flip.permanova.STTD[1:5]
+
+#run PERMANOVA
+(perm.org.STTD <- adonis(Zoop.permanova.STTD ~ Season2 + Inundation + WY, data = Zoop.permanova.STTD.env, method = "bray", permutations = 99))
+
+
+
+
+
+```
+
+
