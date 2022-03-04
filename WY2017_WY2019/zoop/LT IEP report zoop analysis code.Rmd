@@ -2,7 +2,7 @@
 title: "LT IEP report 2017-2019 zoop analysis code"
 author: "Mallory Bedwell"
 date: "8/4/2020"
-output: html_document
+output: html_document 
 ---
 
 ```{r setup, include=FALSE}
@@ -590,7 +590,7 @@ Zoop150_org.env = all.flip150.org[1:13]
 #change to matrix for vegan
 m.Zoop150_org <- as.matrix(Zoop150_org)
 
-#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account speices presence/absence as well as abundance - other distance measures often only account for presence/absence)
+#run metaMDS command - use bray as the distance measure (Bray-Curtis takes into account species presence/absence as well as abundance - other distance measures often only account for presence/absence)
 nmds150.org <- metaMDS(m.Zoop150_org, distance = "bray", trymax = 500)
 
 plot(nmds150.org)
@@ -615,6 +615,74 @@ plot150.inunmag <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "InunMag", tex
 plot150.seas1 <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "Season1", textp = FALSE)
 
 plot150.seas2 <- PlotNMDS(nmds150.org, Zoop150_org.env, group = "Season2", textp = FALSE)
+
+#Cat's NMDS plotting code
+
+theme_NMDS <- theme_bw() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank()) 
+
+```
+#Calculate scores and prepare data frame for plotting
+
+```{r}
+### NMDS scores
+order.scores <- as.data.frame(scores(nmds150.org))
+species.scores <- as.data.frame(scores(nmds150.org, "species"))
+species.scores$species <- rownames(species.scores)
+# Need a category to merge scores with the rest of env data
+row.names(order.scores) <- row.names(all.flip150.org)#change here to table with env variables and orgs
+order.nmdsplot <- cbind(order.scores, all.flip150.org)#change here to table with env variables and orgs
+########### STTD version
+### NMDS scores
+order.scores2 <- as.data.frame(scores(nmdsOrderSTTD))
+species.scores2 <- as.data.frame(scores(nmdsOrderSTTD, "species"))
+species.scores2$species <- rownames(species.scores2)
+# Need a category to merge scores with the rest of env data
+row.names(order.scores2) <- row.names(Order_STTD2)
+order.nmdsplot2 <- cbind(order.scores2, Order_STTD2)
+```
+
+Plotting function
+```{r nmdsplot, message = FALSE, warning = FALSE}
+f_plotNMDS <- function(nmdsDf, nmdsDfSpecies, covariate, colors = cols, legendtitle=covariate) {
+  # extends the plot a little to include species labels that are a bit stretched out; may need to modify based on your data
+  limits_x = c(min(nmdsDfSpecies$NMDS1-1), max(nmdsDfSpecies$NMDS1+1))
+  limits_y = c(min(nmdsDfSpecies$NMDS2-0.1), max(nmdsDfSpecies$NMDS2+0.1))
+  
+  # plot
+  ggplot(nmdsDf, aes(NMDS1, NMDS2)) +
+  geom_point(aes(color = .data[[covariate]],shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
+  #ggrepel::geom_text_repel(data = nmdsDfSpecies, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
+  stat_ellipse(type = 't', size = 1, aes(color = .data[[covariate]],linetype = .data[[covariate]])) +
+  annotate("text", x = min(order.nmdsplot$NMDS1) + 0.25, y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmds150.org$stress,3))) + # Add stress to plot. change round to use NMDS results 
+  scale_color_manual(values = colors, name = legendtitle) +
+  #scale_x_continuous(limits = limits_x) + 
+  #scale_y_continuous(limits = limits_y) + # include if you want to edit y limits
+  labs(shape = legendtitle, linetype = legendtitle, color = legendtitle) +
+  theme_NMDS
+}
+```
+
+Make plots
+```{r}
+cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
+cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
+#*~use this for report~*#
+(nmds_station <- f_plotNMDS(order.nmdsplot, species.scores,  "Station.Code", cols))
+(nmds_WY <- f_plotNMDS(order.nmdsplot, species.scores, "WY", cols, "Water Year")) 
+(nmds_inundation <- f_plotNMDS(order.nmdsplot2, species.scores2,  "Inundation", cols, "Inundation") )#use only STTD data here
+nmds_season1 <- f_plotNMDS(order.nmdsplot, species.scores, "Season1", cols)
+#*~use this for report~*#
+(nmds_season2 <- f_plotNMDS(order.nmdsplot, species.scores, "Season2", cols2, "Season"))
+nmds_season3_STTD <- f_plotNMDS(order.nmdsplot2,species.scores2, "Season3", cols2, "Season")
+```
+
+
+
+
+
+
 
 ###~~~50~~~###
 #by Organism
