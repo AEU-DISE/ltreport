@@ -16,6 +16,18 @@ To combine:
 - CPUE by season, wy (zoop + drift + chla + biovolume)
 
 ```{r}
+root <- "WY2017_WY2019/data_clean"
+driftProp <- read_csv(here::here(root,"")) 
+zoopProp <- read_csv(here::here(root, ""))
+```
+
+Make Proportional Plots
+```{r}
 
 ```
+
+```{r}
+
+```
+
 
