@@ -1,0 +1,21 @@
+---
+title: "combine_plots"
+author: "Catarina Pien"
+date: "3/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+To combine: 
+- Species comp (zoop + drift)
+- Season/WY (zoop + drift + chla)
+- Inundation time series (zoop + drift)
+- CPUE by season, wy (zoop + drift + chla + biovolume)
+
+```{r}
+
+```
+

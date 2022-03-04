@@ -1,0 +1,159 @@
+---
+title: "model_drift_data"
+author: "Catarina Pien"
+date: "2/14/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Packages
+```{r setup, include=FALSE}
+rm(list=ls(all=TRUE))
+
+library(tidyverse)
+library(lubridate)
+library(viridis)
+library(plotly)
+library(here)
+library(MASS)
+```
+
+# Statistics
+
+Read in data
+```{r}
+root <- "WY2017_WY2019/data_clean"
+driftDailyCPUE <- read_csv(here::here(root,"clean_drift_daily_cpue.csv")) %>%
+  mutate(fWY = factor(fWY),
+         Station = factor(Station)) %>%
+  filter(CPUEDaily <100)
+```
+
+Look at data
+```{r}
+driftDailyCPUE <- driftDailyCPUE %>%
+  mutate(logCPUE = log(CPUEDaily+1),
+         CPUE100 = CPUEDaily*100,
+         doy = lubridate::yday(Date))
+driftSTTD <- filter(driftDailyCPUE, Station == "STTD")
+```
+
+```{r}
+par(mfrow = c(2,3))
+hist(driftDailyCPUE$CPUEDaily) #NOT normal
+hist(driftDailyCPUE$logCPUE) # still not normal
+hist(sqrt(driftDailyCPUE$CPUEDaily)) # still not normal
+# Multiple CPUE by 100
+hist(log(driftDailyCPUE$CPUE100))
+
+
+hist(driftSTTD$CPUEDaily) #NOT normal
+hist(driftSTTD$logCPUE) # still not normal
+hist(sqrt(driftSTTD$CPUEDaily)) # still not normal
+hist(log(driftSTTD$CPUE100))
+
+ggplot(data = driftDailyCPUE, aes(x = fWY, y = CPUEDaily)) + geom_boxplot(aes(fill = Station)) + theme_bw() + scale_fill_viridis(discrete = TRUE)
+
+ggplot(data = driftDailyCPUE, aes(x = Station, y = CPUEDaily)) + geom_boxplot(aes(fill = fWY)) + theme_bw() + scale_fill_viridis(discrete = TRUE)
+```
+
+## Effect of inundation on CPUE
+```{r}
+wilcox.test(logCPUE~Inundation, data = driftSTTD)
+ggplot(driftSTTD, aes(x = Inundation, y = logCPUE)) + geom_boxplot() + theme_bw()
+```
+*Significant effect of inundation on CPUE*
+
+## Effect of station/WY on CPUE
+*Poisson
+*Negative binomial
+
+```{r}
+var(driftDailyCPUE$CPUEDaily)/mean(driftDailyCPUE$CPUEDaily)
+```
+
+Poisson
+```{r}
+pois1 <- glm(CountDaily ~ Station*fWY+offset(log(VolumeAdj)), data = driftDailyCPUE, family = "poisson")
+summary(pois1)
+anova(pois1)
+par(mfrow = c(2,2))
+plot(pois1)
+
+pois1_R2 <- 100-(pois1$null.deviance - pois1$deviance)/pois1$deviance
+disp <- pois1$deviance/pois1$df.residual
+```
+
+Negative binomial
+* Maybe take out 131
+```{r}
+# Take out number 131
+drift2 <- driftDailyCPUE[-131,]
+
+# Model
+nb1 <- glm.nb(CountDaily ~ Station * fWY + offset(log(VolumeAdj)), data = drift2, link = "log")
+summary(nb1)
+anova(nb1)
+par(mfrow = c(2,2))
+plot(nb1)
+
+EP <- resid(nb1, type = "pearson")
+ED <- resid(nb1, type = "deviance")
+mu <- predict(nb1, type = "response")
+E = driftDailyCPUE$CountDaily - mu
+plot(x = EP, y = mu)
+```
+
+```{r}
+BIC(pois1, nb1)
+```
+negative binomial preferred
+
+
+Diagnostic plots
+```{r}
+# Calculate residuals
+EP <- resid(nb1, type = "pearson")
+
+# Diagnostic Plots
+par(mfrow = c(2,2))
+plot(x=nb1$fitted.values, y = EP, main = "Pearson residuals")
+plot(x=drift2$Station, y = EP, main = "Station")
+plot(x=drift2$fWY, y = EP, main = "fWY")
+countreg::rootogram(nb1)
+```
+
+Predictive plots
+```{r}
+library(visreg)
+par(mfrow = c(1,2))
+visreg(nb1)
+```
+
+ANOVA
+```{r}
+m1 <- lm(logCPUE ~ Station+fWY + doy +Station:fWY +  Station:doy, data = driftDailyCPUE)
+anova(m1)
+
+par(mfrow = c(2,2))
+plot(m1)
+par(mfrow = c(1,1))
+acf(resid(m1))
+ggplot(driftDailyCPUE, aes(x = fWY, y = log(CPUEDaily+1), fill = Station)) + geom_col()
+
+
+
+m2 <- lm(log(CPUE100) ~ Station * fWY, data = driftDailyCPUE)
+anova(m2)
+par(mfrow = c(2,2))
+plot(m2)
+par(mfrow = c(1,1))
+acf(resid(m2))
+
+```
+
