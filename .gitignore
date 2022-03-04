@@ -39,5 +39,5 @@ vignettes/*.pdf
 .Renviron
 
 # Specifics
-WY2016_WY2019/figures/
-WY2016_WY2019/data_clean/clean_drift_bugs_complete.csv
+WY2017_WY2019/figures/
+WY2017_WY2019/data_clean/clean_drift_bugs_complete.csv
