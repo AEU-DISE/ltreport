@@ -22,7 +22,9 @@ library(readr)
 library(here)
 ```
 
+# Multivariate Code
 
+Read in data
 ```{r}
 root <- "WY2017_WY2019/data_clean"
 driftOrderAbund<- read_csv(here::here(root, "clean_drift_order_abundant.csv"))%>%
@@ -33,9 +35,7 @@ inundation2 <- read_csv(here::here(root, "inundation2.csv")) %>%
   mutate(Date = lubridate::ymd(Date))
 ```
 
-## NMDS
-
-### Order
+## Order
 Complete Case Order
 ```{r}
 Drift_Order_complete <- driftOrderAbund %>%
@@ -49,7 +49,9 @@ Drift_Order_complete <- driftOrderAbund %>%
   ungroup()
 ```
 
-Create matrix
+## NMDS
+
+### Create matrix
 ```{r}
 matOrder <- Drift_Order_complete %>% dplyr::select(c("Station", "Season1", "Season2", "Season3", "fWY", "WYClass", "Inundation", "fMonth", "Date", "Order", "CPUE2")) 
 
@@ -76,7 +78,7 @@ Order_STTD2 <- Order_STTD %>% mutate(Total = dplyr::select(., Amphipoda:Tubifici
 ```
 
 
-Run NMDS
+### Run NMDS
 ```{r}
 library(vegan)
 # NMDS Order
@@ -93,6 +95,8 @@ nmdsOrderSTTD
 stressplot(nmdsOrderSTTD)
 
 ```
+
+### Plot NMDS
 
 #### Plotting code from Rosie/Mallory
 ```{r}
@@ -133,7 +137,7 @@ plot150Season2 <- PlotNMDS(nmdsOrder, Drift_env1, group = "Season3", textp = FAL
 ```
 
 
-Plot NMDS (this one)
+#### Cat's plotting code (this one)
 
 ```{r}
 theme_NMDS <- theme_bw() + 
@@ -141,64 +145,58 @@ theme_NMDS <- theme_bw() +
 panel.background = element_blank()) 
 ```
 
-Calculate scores and prepare data frame for plotting
+##### NMDS function
 ```{r}
-### NMDS scores
-order.scores <- as.data.frame(scores(nmdsOrder))
-species.scores <- as.data.frame(scores(nmdsOrder, "species"))
+#### nmdsResult: input your nmds object
+#### speciesPredictorMatrix: input your matrix used to run your nmds. It should include both your species columns as well as any predictor (e.g. station, year, grouping)
+#### covariate: what covariate do you want to group by? This needs to be in quotes when you call the function.
+#### If you don't want species labels to show up, comment out the 'gg_repel' call and the scale_x_continuous call. 
+
+f_plotNMDS <- function(nmdsResult, speciesPredictorMatrix, covariate, colors = cols, legendtitle=covariate) {
+  
+# Calculate scores and prepare data frame for plotting
+nmds.scores <- as.data.frame(scores(nmdsResult))
+species.scores <- as.data.frame(scores(nmdsResult, "species"))
 species.scores$species <- rownames(species.scores)
 
 # Need a category to merge scores with the rest of env data
-row.names(order.scores) <- row.names(Order_w2)
-order.nmdsplot <- cbind(order.scores, Order_w2)
-
-########### STTD version
-
-### NMDS scores
-order.scores2 <- as.data.frame(scores(nmdsOrderSTTD))
-species.scores2 <- as.data.frame(scores(nmdsOrderSTTD, "species"))
-species.scores2$species <- rownames(species.scores2)
-
-# Need a category to merge scores with the rest of env data
-row.names(order.scores2) <- row.names(Order_STTD2)
-order.nmdsplot2 <- cbind(order.scores2, Order_STTD2)
-```
-
-Plotting function
-```{r nmdsplot, message = FALSE, warning = FALSE}
-f_plotNMDS <- function(nmdsDf, nmdsDfSpecies, covariate, colors = cols, legendtitle=covariate) {
+row.names(nmds.scores) <- row.names(speciesPredictorMatrix)
+df.nmdsplot <- cbind(nmds.scores, speciesPredictorMatrix)
+  
   # extends the plot a little to include species labels that are a bit stretched out; may need to modify based on your data
-  limits_x = c(min(nmdsDfSpecies$NMDS1-1), max(nmdsDfSpecies$NMDS1+1))
-  limits_y = c(min(nmdsDfSpecies$NMDS2-0.1), max(nmdsDfSpecies$NMDS2+0.1))
+  limits_x = c(min(species.scores$NMDS1-1), max(species.scores$NMDS1+1))
+  limits_y = c(min(species.scores$NMDS2-0.1), max(species.scores$NMDS2+0.1))
   
   # plot
-  ggplot(nmdsDf, aes(NMDS1, NMDS2)) +
+  ggplot(df.nmdsplot, aes(NMDS1, NMDS2)) +
   geom_point(aes(color = .data[[covariate]],shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
-  ggrepel::geom_text_repel(data = nmdsDfSpecies, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
+  ggrepel::geom_text_repel(data = species.scores, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
   stat_ellipse(type = 't', size = 1, aes(color = .data[[covariate]],linetype = .data[[covariate]])) +
-  annotate("text", x = min(order.nmdsplot$NMDS1) + 0.25, y = min(order.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsOrder$stress,3))) + # Add stress to plot
+  annotate("text", x = min(df.nmdsplot$NMDS1) + 0.25, y = min(df.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsResult$stress,3))) + # Add stress to plot
   scale_color_manual(values = colors, name = legendtitle) +
   scale_x_continuous(limits = limits_x) + 
   #scale_y_continuous(limits = limits_y) + # include if you want to edit y limits
   labs(shape = legendtitle, linetype = legendtitle, color = legendtitle) +
   theme_NMDS
 }
+
 ```
 
-Make plots
+#####Make plots
 ```{r}
 cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
 cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
 
-(nmds_station <- f_plotNMDS(order.nmdsplot, species.scores,  "Station", cols))
-(nmds_WY <- f_plotNMDS(order.nmdsplot, species.scores, "fWY", cols, "Water Year")) 
-(nmds_inundation <- f_plotNMDS(order.nmdsplot2, species.scores2,  "Inundation", cols, "Inundation") )
-nmds_season1 <- f_plotNMDS(order.nmdsplot, species.scores, "Season1", cols)
-(nmds_season3 <- f_plotNMDS(order.nmdsplot, species.scores, "Season3", cols2, "Season"))
+(nmds_station <- f_plotNMDS(nmdsOrder, Order_w2,  "Station", cols))
+(nmds_WY <- f_plotNMDS(nmdsOrder, Order_w2,  "fWY", cols))
+(nmds_inundation <- f_plotNMDS(nmdsOrderSTTD, Order_STTD2,  "Inundation", cols))
+
+nmds_season1 <- f_plotNMDS(nmdsOrder, Order_w2,  "Season1", cols)
+(nmds_season3 <- f_plotNMDS(nmdsOrder, Order_w2,  "Season3", cols2))
 nmds_season3_STTD <- f_plotNMDS(order.nmdsplot2,species.scores2, "Season3", cols2, "Season")
 ```
 
-Save plots
+##### Save plots
 ```{r}
 tiff("figures/fig_drift7_NMDS_Station_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",  family = "sans", compression = "lzw")
 nmds_station
@@ -222,7 +220,7 @@ dev.off()
 ```
 
 
-## Add PERMANOVA
+## PERMANOVA
 ### Order
 ```{r}
 # Row standardization - subset species columns only
