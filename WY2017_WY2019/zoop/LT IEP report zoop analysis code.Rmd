@@ -501,7 +501,7 @@ barplot.inun
 #line plot with inundation shaded
 #sum daily CPUE for both sites
 zoop150.sum1 <- zoop150 %>% 
-  group_by(Date, WY) %>% summarize(daily.CPUE = sum(CPUE))
+  group_by(Date, Station.Code, WY) %>% summarize(daily.CPUE = sum(CPUE))
 
 #set colors and size of columns 
 inundation$color = ifelse(inundation$Inundation == TRUE, "Inundation", "No Inundation")
@@ -511,11 +511,11 @@ inundation$Inundation_n = ifelse(inundation$Inundation == "TRUE", 300000, 0)
 #plot
 inun.zoop.all <- ggplot() +
   geom_col(data = inundation, aes(x = Date, y = Inundation_n), color = "light blue") +
-  geom_line(data = zoop150.sum1, aes(x = Date, y = daily.CPUE)) +
+  geom_line(data = zoop150.sum1, aes(x = Date, y = daily.CPUE, linetype = Station.Code)) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
-  labs(y = expression(CPUE~(Count~m^-3))) +
+  labs(y = expression(CPUE~(Count~m^-3)), linetype= "Station") +
   theme_bw()+
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14), strip.text = element_text(size = 13), axis.text.x = element_text( size = 12, angle = 90), legend.position = "none") 
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 14), strip.text = element_text(size = 13), axis.text.x = element_text( size = 12, angle = 90))
 
 inun.zoop.all
 ```
