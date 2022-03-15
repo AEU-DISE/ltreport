@@ -37,6 +37,8 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+# 
+*.Rproj
 
 # Specifics
 WY2017_WY2019/figures/
