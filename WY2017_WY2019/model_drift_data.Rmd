@@ -21,6 +21,7 @@ library(viridis)
 library(plotly)
 library(here)
 library(MASS)
+library(readr)
 ```
 
 # Statistics
