@@ -65,7 +65,7 @@ ggplot(data = driftDailyCPUE, aes(x = Station, y = CPUEDaily)) + geom_boxplot(ae
 
 ## Effect of inundation on CPUE
 ```{r}
-wilcox.test(logCPUE~Inundation, data = driftSTTD)
+wilcox.test(CPUEDaily~Inundation, data = driftSTTD)
 ggplot(driftSTTD, aes(x = Inundation, y = logCPUE)) + geom_boxplot() + theme_bw()
 ```
 *Significant effect of inundation on CPUE*
@@ -105,15 +105,21 @@ plot(nb1)
 
 EP <- resid(nb1, type = "pearson")
 ED <- resid(nb1, type = "deviance")
+par(mfrow = c(1,1))
+qqnorm(ED)
 mu <- predict(nb1, type = "response")
 E = driftDailyCPUE$CountDaily - mu
-plot(x = EP, y = mu)
+plot(x = ED, y = mu)
 ```
 
 ```{r}
 BIC(pois1, nb1)
 ```
 negative binomial preferred
+```{r}
+library(effects)
+summary(allEffects(nb1))
+```
 
 
 Diagnostic plots
