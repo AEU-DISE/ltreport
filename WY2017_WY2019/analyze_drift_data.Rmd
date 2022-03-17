@@ -53,6 +53,10 @@ meanDriftBugs <- driftDailyCPUE %>%
             se = sdCPUE/sqrt(n))
 ```
 
+```{r}
+write.csv(meanDriftBugs, here("WY2017_WY2019", "data_figures", "meanDriftBugs.csv"), row.names = FALSE)
+```
+
 Lists
 ```{r}
 #n = [22]
@@ -164,6 +168,11 @@ OrderAbund <- driftOrderAbund %>%
 
 ```
 
+Write for combined plot
+```{r}
+write.csv(OrderAbund, here("WY2017_WY2019", "data_figures", "ProportionalData.csv"), row.names = FALSE)
+```
+
 WY - Order by Station
 3. Proportional Abundance (Order) by WY and Station
 (included in report)
@@ -184,6 +193,7 @@ propOrder <- ggplot(OrderAbund, aes(x=fWY, y = propCPUE/100, fill = Order)) + ge
   scale_fill_manual(values = pal36) + 
   labs(y = "Proportional Catch Per Unit Effort", x = "Water Year") + theme_ltreport + theme(axis.text.x = element_text(angle = 90))
 ```
+
 
 Export
 ```{r}
@@ -580,6 +590,12 @@ colors <- data.frame(Inundation = c("Inundation", "No Inundation"), Color = c("l
 Figure 4. Inundation vs CPUE by station
 need to fix this to add inundation legend and line colors/types
 Export
+
+```{r}
+write.csv(driftDailyCPUE, here("WY2017_WY2019", "data_figures", "driftDailyCPUE.csv"), row.names = FALSE)
+write.csv(inundation2, here("WY2017_WY2019", "data_figures", "inundation2.csv"), row.names = FALSE)
+```
+
 ```{r}
 # Total CPUE
 (inunDriftAll <- ggplot() +
