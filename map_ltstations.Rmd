@@ -1,0 +1,142 @@
+---
+title: "Map_LTStations"
+author: "Catarina Pien"
+date: "11/16/2021"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+library(dplyr)
+library(sf)
+library(here)
+```
+
+Add data
+```{r}
+root <- "WY2017_WY2019"
+stations <- read_csv(here::here(root, "data_raw", "Stations.csv"))
+flood <- st_read("shapefiles/Flood_Bypasses.shp")
+flood_4326 <- st_transform(flood, crs = 4326) %>%
+  dplyr::filter(FID == 1)
+```
+
+```{r}
+library(ggmap)
+# Define coordinate bounding box. You could also use numbers if you want. 
+buffer = 0.14
+coordDict = list( 
+    'minLat' = min(stations$Latitude) - buffer,
+    'maxLat' = max(stations$Latitude) + buffer,
+    'minLon' = min(stations$Longitude) - buffer,
+    'maxLon' = max(stations$Longitude) + buffer
+)
+# Create map object using your bounded coordinates
+map_obj <- get_stamenmap(
+  bbox = c(left = coordDict[['minLon']], bottom = coordDict[['minLat']], right = coordDict[['maxLon']], top = coordDict[['maxLat']]), # the bounding box
+  zoom = 12, # zoom lvl; higher number = more detail (but also more processing power)
+  maptype = 'terrain-background'# type of basemap; 'terrain' is my default, but check help(get_stamenmap) for a full list
+  )
+# Plot the map
+map <- ggmap(map_obj, legend = "right")
+map
+
+# Add your points
+map2 <- map +
+  geom_point(data = stations, aes(x = Longitude, y = Latitude, color = DataTypes), size = 3) +
+ geom_text(data = stations, aes(label = StationCode, x = Longitude, y = Latitude), size = 2, vjust = 0, hjust = 0) +
+  labs(x = "Longitude", y = "Latitude")
+map2
+
+```
+
+Convert to sf
+```{r}
+# Define the projection of your points, usually WGS 84 (= crs 4326)
+stations_sf <- st_as_sf(stations, coords = c("Longitude", "Latitude"), crs = 4326)
+stationsT <- st_transform(stations_sf, crs = 4269) # NAD83 
+```
+
+```{r}
+library(viridis)
+require(ggspatial)
+library(deltamapr)
+
+
+WW_Delta_crop <- st_crop(WW_Delta, xmin = -121.75, xmax = -121.45, ymin = 38, ymax = 39)
+
+ggplot() +
+    geom_sf(data = WW_Delta, fill = "steelblue") +
+  geom_sf(data = stationsT, aes(colour = DataTypes),size = 4, inherit.aes = FALSE) +
+  geom_sf_label(data = stationsT, aes(label = StationCode), nudge_x = 0.03,  inherit.aes = FALSE)
+
+
+
+map_final <- 
+  ggmap(map_obj) + 
+  geom_sf(data = WW_Delta_crop, colour = "lightblue4", fill = "lightblue4", inherit.aes = FALSE) +
+  geom_sf(data = flood_4326, fill = "tan", alpha = 0.5, linetype = "dashed", inherit.aes = FALSE) + 
+  geom_sf(data = stationsT, aes(colour = DataTypes),size = 4, inherit.aes = FALSE) +
+  geom_sf_label(data = stationsT, aes(label = StationCode), size = 5, nudge_x = 0.04,  inherit.aes = FALSE) +
+  annotate(geom = "text", x = -121.66, y = 38.55, label = "Yolo Bypass", size = 5, fontface = "italic", colour = "darkorange3", angle = 90) +
+  annotate(geom = "text", x = -121.6, y = 38.52, label = "Toe Drain", size = 3, fontface = "italic", colour = "black", angle = 90) +
+  annotate(geom = "text", x = -121.47, y = 38.5, label = "Sacramento River", size = 4, fontface = "italic", colour = "navyblue") +
+  annotation_north_arrow(location = "tr", which_north = "true", 
+        pad_x = unit(.1, "in"), pad_y = unit(0.15, "in"),
+        style = north_arrow_fancy_orienteering) +
+  annotation_scale(location = "tl", bar_cols = c("black", "white", "black", "white"), text_cex = 1.1) +
+  scale_x_continuous(breaks = seq(-121.75, -121.4, by = 0.1), expand = c(0,0)) +
+  scale_colour_manual(values = c("orangered3", "royalblue4"))+
+  theme_bw() + 
+    theme(axis.title = element_blank(),
+        axis.text.x = element_text(angle = 90, size = 13),
+        axis.text.y = element_text(size = 13),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 13),
+        legend.position = "top"
+        ) +
+  guides(colour = guide_legend(nrow = 2, byrow = TRUE, title = "Data Type"))
+map_final
+
+```
+
+Version with no data type annotations
+```{r}
+map_final2 <- ggmap(map_obj) + 
+  geom_sf(data = WW_Delta_crop, color = "steelblue", fill = "steelblue", inherit.aes = FALSE) +
+  geom_sf(data = stationsT, size = 4, inherit.aes = FALSE, color = "orange3") +
+  geom_sf_label(data = stationsT, aes(label = StationCode), size = 5, nudge_x = 0.04,  inherit.aes = FALSE) +
+  annotation_north_arrow(location = "tr", which_north = "true", 
+        pad_x = unit(.1, "in"), pad_y = unit(0.15, "in"),
+        style = north_arrow_fancy_orienteering) +
+  annotation_scale(location = "tl", bar_cols = c("black", "white", "black", "white"), text_cex = 1.1) +
+  scale_x_continuous(breaks = seq(-121.75, -121.4, by = 0.1), expand = c(0,0)) +
+  scale_colour_brewer(palette = "Set2") +
+  theme_bw() + 
+    theme(axis.title = element_blank(),
+        axis.text.x = element_text(angle = 90, size = 13),
+        axis.text.y = element_text(size = 13),
+        legend.text = element_text(size = 13),
+        legend.title = element_text(size = 13),
+        legend.position = "top"
+        ) +
+  guides(colour = guide_legend(title = "Data Type"))
+map_final2
+```
+
+Export Map
+```{r}
+library(ragg)
+# Problem with transparent shapefile background (yolo) not showing up. Using ragg package works. 
+agg_tiff("StationMap.tiff", width = 6.5, height = 7.5, units = "in", res = 300)
+map_final
+invisible(dev.off())
+
+map_final2
+ggsave("StationMapNoColors.tiff", width = 6, height = 8, units = "in", device = 'jpeg', dpi = 300)
+```
+
