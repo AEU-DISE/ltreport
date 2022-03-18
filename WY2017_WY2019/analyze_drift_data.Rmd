@@ -10,8 +10,6 @@ editor_options:
 Last updated 6 August, 2021 by Catarina Pien
 
 ```{r setup, include=FALSE}
-rm(list=ls(all=TRUE))
-
 library(tidyverse)
 library(lubridate)
 library(viridis)
@@ -166,11 +164,42 @@ OrderAbund <- driftOrderAbund %>%
   ungroup() %>%
   arrange(Station, fWY, desc(propCPUE))
 
+#---------------------------------------------------
+#Calculate Percentage 
+zoop_sum_WY_Site_Org <- zoop150 %>% group_by(Organism, WY, Station.Code) %>% summarize(sumCPUE = sum(CPUE))
+
+zoop_sum_WY_Site <- zoop_sum_WY_Site_Org %>% group_by(WY, Station.Code) %>% summarize(totalCPUE = sum(sumCPUE))
+
+zoop_percent<-merge(zoop_sum_WY_Site_Org,zoop_sum_WY_Site, by =c("Station.Code", "WY"))
+
+zoop_percent$percent <- (zoop_percent$sumCPUE / zoop_percent$totalCPUE) * 100
+
+
+#Above or Below 3%? and reassign organism name to other if less than 3%
+zoop_percent$Org2 <- ifelse(zoop_percent$percent >= 3, zoop_percent$Organism, "Other")
+
+driftOrderPercent <- driftBugs %>%
+  mutate(Order2 = ifelse(is.na(Order), TaxonName, Order)) %>%
+  group_by(Station, fWY) %>%
+  mutate(totalCPUE = sum(CPUE)) %>%
+  ungroup() %>%
+  group_by(Station, fWY, totalCPUE, Order2) %>%
+  summarize(meanCPUE = mean(CPUE),
+            sumCPUE = sum(CPUE),
+    propCPUE = sumCPUE/totalCPUE*100) %>%
+  unique() %>%
+  ungroup() 
+
+driftPercentFilt <- driftOrderPercent %>%
+  mutate(Order3 = ifelse(propCPUE>=3, Order2, "Other")) %>%
+  group_by(Station, fWY, Order3) %>%
+  summarize(Percent = sum(propCPUE))
+
 ```
 
 Write for combined plot
 ```{r}
-write.csv(OrderAbund, here("WY2017_WY2019", "data_figures", "ProportionalData.csv"), row.names = FALSE)
+write.csv(driftPercentFilt, here("WY2017_WY2019", "data_figures", "ProportionalData.csv"), row.names = FALSE)
 ```
 
 WY - Order by Station
