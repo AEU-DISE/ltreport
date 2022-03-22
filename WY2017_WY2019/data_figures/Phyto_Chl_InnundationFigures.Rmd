@@ -1,14 +1,12 @@
 ---
-title: "Lower Trophic -Light/Phyto/Chl"
+title: "Phyto_Chl_InnundationFigures"
 author: "Alli Brady"
-date: "3/4/2022"
+date: "3/22/2022"
 output: html_document
 ---
 
 ```{r}
-##Loading Libraries yes
-
-
+##Loading Libraries
 library(ggplot2)
 library(lubridate)
 library(rcompanion)
@@ -21,48 +19,33 @@ library(rstatix)
 library(visreg)
 library(plotly)
 library(patchwork)
-
 ## Set WD and Bringing in Data
-
 setwd('C:/Users/abrady/Documents/R/ltreport/WY2017_WY2019/')
-
 light<-read.csv("data_clean/clean_light_dataset.csv")
 phyto<-read.csv("data_raw/LT_phyto_density.csv")
 chl<-read.csv("data_raw/LT_discrete_chla_RAW (1).csv")
 inundation <- read_csv("data_raw/InundationWY2010toWY2019.csv")
-
-
 ```
 
 ```{r}
 ## Editing Data 
-
 chl<- filter(chl,!Analyte%in% 'Pheo') # Dont need this analyte
-
 light2<- light[ ,c(1,2,3,6,11,26)]  #pear down to useful columns
 phyto2<-phyto[ ,c(1,2,3,37)]
-
 colnames(light2)[1]='Date'           # changed weird column names
 colnames(chl)[1]='StationCode'
-
 chl<- filter(chl,StationCode%in% c('STTD','LIS','SHR')) #Useful Stations only
 chl$Result<-as.numeric(chl$Result)  #as numeric value
-
 ```
 
 ```{r}
  ## Summarizing Data By Date and Station
-
 Bio<-                            # total biovolume 
 group_by(phyto2, Date, StationCode) %>%
 summarize('biovolume' = sum(Biovolume.Density))  
-
-
 Chl<-             #summarize chlorophyl by date/station  this takes he average of the sample and replicate sample
   group_by(chl, Date, StationCode) %>%
   summarize('Result' = mean(Result))  
-
-
 ```
 
 ```{r}
@@ -70,34 +53,25 @@ Chl<-             #summarize chlorophyl by date/station  this takes he average o
 Bio$Date<-mdy(Bio$Date)
 Bio$Year<-year(Bio$Date)
 Bio$month<-month(Bio$Date)
-
 Chl$Date<-mdy(Chl$Date)
 Chl$Year<-year(Chl$Date)
 Chl$month<-month(Chl$Date)
-
-
 inundation$Date<-mdy(inundation$Date)
 inundation$Year<-year(inundation$Date)
 inundation$month<-month(inundation$Date)
-
-
 Bio <- mutate(Bio, month = month(Date), 
               WaterYear = case_when(
                 month %in% c(10,11,12) ~ Year +1,
                 TRUE ~ Year
               ))                           
 Bio$WaterYear<- as_factor(Bio$WaterYear)
-
 Chl<- mutate(Chl, month = month(Date),   
              WaterYear = case_when(
                month %in% c(10,11,12) ~ Year +1,
                TRUE ~ Year
              ))                           
 Chl$WaterYear<- as_factor(Chl$WaterYear)
-
 Chl<- filter(Chl,!(WaterYear == "2020"))   #some 2020 data got in here
-
-
 inundation<- mutate(inundation, month = month(Date), 
                     WaterYear = case_when(
                       month %in% c(10,11,12) ~ Year +1,
@@ -108,10 +82,8 @@ inundation$WaterYear<- as_factor(inundation$WaterYear)
 
 ```{r}
 ### Taking out SHR for some analysis later on on ONLY TOE DRAIN (TD) Sites
-
 BioTD<-filter(Bio, StationCode !="SHR") 
 ChlTD<-filter(Chl,StationCode !="SHR")
-
 ## Screwtrap only datasets for inundation plots
 ChlSTTD<-filter(ChlTD,StationCode !="LIS")
 BioSTTD<-filter(BioTD, StationCode !="LIS") 
@@ -147,25 +119,18 @@ theme_Publication <- function(base_size=12, base_family="Arial") {
     ))
   
 }
-
 ```
 
 ```{r}
-
 ##Clorophyll at STTD Graph with Inundation Period
 inundation <- read_csv("data_raw/InundationWY2010toWY2019.csv")
 inundation$Date <- mdy(inundation$Date)
-
 #Filter to relevant time period
 inundation <-inundation %>%
   filter(Date>"2016-10-01" & Date<"2019-09-30") %>%
   mutate(Inundation2 = ifelse(lead(Inundation, 10) == "TRUE", "TRUE", Inundation),
          Inundation_n = ifelse(Inundation2 == "TRUE", 50, 0))
-
-
-
 #Graph
-
  ##Chlorophyll over time 
  p2<- ggplot()+
   geom_line(data = ChlSTTD, aes(x= Date, y=Result,))+ 
@@ -177,11 +142,7 @@ inundation <-inundation %>%
   labs(colour="Innundation Period") +
   labs(x = "Date") + 
   labs(y = "Chlorophyll result",title="Chlorophyll at STTD") 
-
 p2
-
-
-
 ```
 ```{r}
 ##Biovol by site over time with inundation -JUST STTD
@@ -190,8 +151,6 @@ inundation <-inundation %>%
   mutate(Inundation2 = ifelse(lead(Inundation, 10) == "TRUE", "TRUE", Inundation),
          Inundation_n = ifelse(Inundation2 == "TRUE", 2.49e+07, 0))
 #Graph
-
-
 p3<- ggplot()+
   
   geom_col(data = inundation, aes(x = Date, y = Inundation_n), fill="light blue", alpha=0.6)+
@@ -204,8 +163,8 @@ p3<- ggplot()+
   theme(axis.text.x = element_text(size = 8, angle =90))+
   labs(x = "Date", element_text(size=3)) + 
   labs(y = "Biovolume Density (??m3/mL)",title="Phytoplankton at STTD") 
-
 p3
-
 ```
+
+
 
