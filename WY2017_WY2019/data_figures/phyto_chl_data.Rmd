@@ -6,7 +6,8 @@ output: html_document
 ---
 
 ```{r}
-##Loading Libraries
+##Loading Libraries yes
+
 
 library(ggplot2)
 library(lubridate)
@@ -152,7 +153,7 @@ theme_Publication <- function(base_size=12, base_family="Arial") {
 ```{r}
 
 ##Clorophyll at STTD Graph with Inundation Period
-
+inundation <- read_csv("data_raw/InundationWY2010toWY2019.csv")
 inundation$Date <- mdy(inundation$Date)
 
 #Filter to relevant time period
