@@ -3,10 +3,20 @@ title: "combine_plots"
 author: "Catarina Pien"
 date: "3/4/2022"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+rm(list=ls(all=TRUE))
+library(dplyr)
+library(gpplot2)
+library(lubridate)
+library(Polychrome)
 ```
 
 To combine: 
@@ -16,18 +26,259 @@ To combine:
 - CPUE by season, wy (zoop + drift + chla + biovolume)
 
 ```{r}
-root <- "WY2017_WY2019/data_clean"
-driftProp <- read_csv(here::here(root,"")) 
-zoopProp <- read_csv(here::here(root, ""))
+root <- "WY2017_WY2019/data_figures"
+
+# Proportional plot
+driftProp <- read_csv(here::here(root,"ProportionalData.csv")) %>%
+  mutate(fWY = case_when(fWY == "2017" ~ "WY17",
+                         fWY == "2018" ~ "WY18",
+                         fWY == "2019" ~ "WY19",
+                         TRUE ~ as.character(fWY)))
+zoopProp <- read_csv(here::here(root, "zoop_percent.csv"))%>%
+  rename(Station = Station.Code) %>%
+  mutate(Org2 = ifelse(Org2 == "Acanthocyclops vernalis adult", "Acanthocyclops spp. adult", Org2))
+
+# Bar plot station/WY
+driftBar <- read_csv(here::here(root, "meanDriftBugs.csv"))%>%
+  mutate(fWY = case_when(fWY == "2017" ~ "WY17",
+                         fWY == "2018" ~ "WY18",
+                         fWY == "2019" ~ "WY19",
+                         TRUE ~ as.character(fWY)))
+zoopBar <- read_csv(here::here(root, "zoop150.sum.csv"))%>%
+  rename(Station = Station.Code)
+chlBar <- read_csv(here::here(root, ".csv"))
+phytoBar <- read_csv(here::here(root, ".csv"))
+
+# Inundation Plot
+inun <- read_csv(here::here(root, "inundation2.csv")) %>%
+  mutate(inunD = ifelse(Inundation == "FALSE", 0, 175),
+    inunZ = ifelse(Inundation == "FALSE", 0, 3e05))
+driftInun <- read_csv(here::here(root, "driftDailyCPUE.csv"))
+zoopInun <- read_csv(here::here(root, "zoop150.sum1.csv"))%>%
+  rename(Station = Station.Code)
+chlInun <- read_csv(here::here(root, ".csv"))
+phytoInun <- read_csv(here::here(root, ".csv"))
+  
 ```
 
-Make Proportional Plots
+```{r}
+theme_ltreport <- theme_bw() + 
+  theme(axis.text = element_text(size = 14),
+                        axis.title = element_blank(),
+                        strip.text = element_text(size = 13),
+                        axis.text.x = element_text(angle = 90),
+                        legend.title = element_text(size = 11),
+                        legend.text = element_text(size = 9.5),
+        legend.position = "top")
+```
+
+```{r}
+pal36 <- palette36.colors(36)
+pal36 <- as.vector(t(pal36))
+```
+
+## Make Proportional Plots
+
+Pre-steps: for each, took total dataset, calculated the proportion of each taxa per station/year grouping. Any taxa that was <3% of that station/year's CPUE was classified as "other." All the "others" were combined into one percentage. 
+
+### Drift
+```{r}
+# Proportional
+(plot_driftProp <- ggplot(driftProp, aes(x=fWY, y = Percent/100, fill = Order3)) + 
+   geom_bar(stat = "identity", color = "black") + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + 
+  labs(title= "B) Drift Invertebrates", 
+       y = "Proportional Catch Per Unit Effort", x = "Water Year") + 
+   theme_ltreport + 
+   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
+         legend.title = element_blank(),                                                      axis.title.y = element_blank()) +
+    guides(fill=guide_legend(nrow=2)))
+
+```
+
+### Zoop
+```{r}
+zoopProp2 <- zoopProp %>%
+  group_by(Station, WY, Org2) %>%
+  summarize(totalPercent = sum(percent))
+# This one
+(plot_zoopProp <- ggplot(zoopProp2, aes(x=WY, y = totalPercent, fill = Org2)) + 
+   geom_bar(stat = "identity", color = "black") + facet_wrap(~Station) +
+  scale_fill_manual(values = pal36) + 
+  labs(title= "A) Zooplankton", 
+       y = "Proportional Catch Per Unit Effort", x = "Water Year") + 
+   theme_ltreport + 
+   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
+         legend.title = element_blank(),                                                      axis.title.y = element_blank())+
+    guides(fill=guide_legend(nrow=3)))
+```
+
+### Combined
+```{r}
+library(ggpubr)
+library(gridExtra)
+
+(combined <- ggarrange(plot_zoopProp, plot_driftProp, nrow = 2))
+
+annotated <- annotate_figure(combined, 
+                left = text_grob("Proportional Catch Per Unit Effort", color = "black", rot = 90, size = 14))
+
+annotated
+```
+
+```{r}
+tiff(filename = paste("WY2017_WY2019/figures/fig_proportionalcombined.tiff"), res = 300, width = 8, height = 9, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+annotated
+dev.off()
+```
+
+
+## Make WY/station bar plots
+
+### Drift
+```{r}
+#Mean CPUE
+(plot_barDrift <- ggplot(driftBar, aes(x = fWY, y = meanCPUE, fill = WYClass)) + 
+   geom_col()  + 
+   geom_errorbar(aes(ymin = meanCPUE-se, ymax = meanCPUE + se), width = .2) +
+   labs(title = "B) Drift Invertebrates")+
+ facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Water Year", y = expression(Mean~Daily~CPUE~(Count~m^-3))) +
+  guides(fill = guide_legend(title = "Water Year Class")) + theme_ltreport + theme(legend.position = "top"))
+```
+
+### Zoop
+```{r}
+zoopBar2<- zoopBar %>% 
+  group_by(Station, WY, WY.Class) %>% summarize(meanCPUE = mean(daily.CPUE, na.rm = TRUE),
+            sdCPUE = sd(daily.CPUE, na.rm = TRUE),
+            n = n(),
+            se = sdCPUE/sqrt(n))
+
+
+(plot_barZoop <- ggplot(zoopBar2, aes(x = WY, y = meanCPUE, fill = WY.Class)) + 
+   geom_col()  + 
+   geom_errorbar(aes(ymin = meanCPUE-se, ymax = meanCPUE + se), width = .2) +
+    labs(title = "A) Zooplankton") +
+ facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Water Year", y = expression(Mean~Daily~CPUE~(Count~m^-3))) +
+  guides(fill = guide_legend(title = "Water Year Class")) + theme_ltreport + theme(legend.position = "top"))
+```
+
+### Chlorophyll
 ```{r}
 
 ```
 
+### Combined
+```{r}
+library(ggpubr)
+library(gridExtra)
+
+(combinedBar <- ggarrange(plot_barZoop, plot_barDrift, nrow = 2, common.legend = TRUE))
+
+annotatedBar <- annotate_figure(combinedBar, 
+                left = text_grob(expression(Catch~Per~Unit~Effort~(Count~m^-3)), color = "black", rot = 90, size = 14))
+
+annotatedBar
+```
+
+```{r}
+tiff(filename = paste("WY2017_WY2019/figures/fig_barcombined.tiff"), res = 300, width = 8, height = 8, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+annotatedBar
+dev.off()
+```
+
+
+
+## Make Inundation plots
+
+### Drift
+```{r}
+color = c("lightblue", "white")
+# Total CPUE
+(plot_inunDrift <- ggplot() +
+  geom_col(data = inun, aes(x = Date, y = inunD, fill = color, alpha = color)) +
+  geom_line(data = driftDailyCPUE, aes(x = Date, y = CPUEDaily, linetype = Station, color = Station)) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
+   scale_colour_manual(values = c("hotpink3", "black")) + 
+    scale_alpha_manual(values = c(1, 0), guide = "none") +
+  labs(title = "B) Drift Invertebrates", y = expression(CPUE~(Count~m^-3))) +
+ scale_fill_manual(values = c("lightblue", "white")) +
+    theme_bw() + 
+  theme_ltreport + 
+   theme(axis.title.x = element_blank(),
+         legend.key=element_rect(colour="black")))
+  #scale_fill_manual(name = "Inundation", values = c("light blue", "white"), guide = guide_legend(override.aes = list(color = c("light blue", "white")))))
+```
+
+### Zoop
+```{r}
+(plot_inunZoop <- ggplot() +
+  geom_col(data = inun, aes(x = Date, y = inunZ, fill = color, alpha = color)) +
+  geom_line(data = zoopInun, aes(x = Date, y = daily.CPUE, linetype = Station, color = Station)) +
+  scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
+   scale_colour_manual(values = c("hotpink3", "black")) + 
+    scale_alpha_manual(values = c(1, 0), guide = "none") +
+  labs(title = "A) Zooplankton", y = expression(CPUE~(Count~m^-3)), fill = "Inundation") +
+ scale_fill_manual(values = c("lightblue", "white")) +
+    theme_bw() + 
+  theme_ltreport + 
+   theme(axis.title.x = element_blank(),
+         legend.key=element_rect(colour="black")))
+```
+
+### Chlorophyll
 ```{r}
 
 ```
 
+### Combined
+```{r}
+library(ggpubr)
+library(gridExtra)
+
+(combinedInun <- ggarrange(plot_inunZoop, plot_inunDrift, nrow = 2, common.legend = TRUE))
+
+annotatedInun <- annotate_figure(combinedInun, 
+                left = text_grob(expression(Catch~Per~Unit~Effort~(Count~m^-3)), color = "black", rot = 90, size = 14))
+
+annotatedInun
+```
+
+```{r}
+tiff(filename = paste("WY2017_WY2019/figures/fig_inuncombined.tiff"), res = 300, width = 8, height = 8, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+annotatedInun
+dev.off()
+```
+
+
+Grid arrange separate legend
+```{r}
+# save legend separately for final figure
+get_legend<-function(myggplot){
+  tmp <- ggplot_gtable(ggplot_build(myggplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+legend <- get_legend(plot)
+
+# Annotate
+plot21NR_avg3 <- annotate_figure(plot21NR_avg2, 
+                left = text_grob("21°C", color = "black", rot = 90, size = 14))
+
+# Plot
+plotComb <- grid.arrange(legend, plot, plot2, plot3, 
+                            nrow = 3,
+            layout_matrix = rbind(c(1,1,2), c(3,4,5)), 
+             widths = c(3.23,3,2.85), heights = c(0.75,3))
+dev.off()
+```
+
+## Export code
+```{r}
+tiff(filename = paste("WY2016_WY2019/figures/fig_drift4b_totalcpuebyinundation.tiff"), res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+inunDriftAll
+dev.off()
+```
 
