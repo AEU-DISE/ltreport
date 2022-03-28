@@ -87,13 +87,20 @@ nmdsOrder
 
 stressplot(nmdsOrder)
 
-
 # STTD
 nmdsOrderSTTD <- metaMDS(Order_STTD2[,10:29], distance="bray", k=3, trymax=400, autotransform = FALSE)
 nmdsOrderSTTD
 
 stressplot(nmdsOrderSTTD)
 
+```
+
+```{r}
+save(nmdsOrder, nmdsOrderSTTD, file = here(root, "nmdsResults.Rdata"))
+```
+
+```{r}
+load(here(root, "nmdsResults.Rdata"))
 ```
 
 ### Plot NMDS
@@ -142,7 +149,8 @@ plot150Season2 <- PlotNMDS(nmdsOrder, Drift_env1, group = "Season3", textp = FAL
 ```{r}
 theme_NMDS <- theme_bw() + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank()) 
+panel.background = element_blank(),
+legend.position = "top") 
 ```
 
 ##### NMDS function
@@ -151,6 +159,7 @@ panel.background = element_blank())
 #### speciesPredictorMatrix: input your matrix used to run your nmds. It should include both your species columns as well as any predictor (e.g. station, year, grouping)
 #### covariate: what covariate do you want to group by? This needs to be in quotes when you call the function.
 #### If you don't want species labels to show up, comment out the 'gg_repel' call and the scale_x_continuous call. 
+#### legendtitle is what you want your legend title to be, if you want it to be named differently from your covariate name
 
 f_plotNMDS <- function(nmdsResult, speciesPredictorMatrix, covariate, colors = cols, legendtitle=covariate) {
   
@@ -172,7 +181,7 @@ df.nmdsplot <- cbind(nmds.scores, speciesPredictorMatrix)
   geom_point(aes(color = .data[[covariate]],shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
   ggrepel::geom_text_repel(data = species.scores, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
   stat_ellipse(type = 't', size = 1, aes(color = .data[[covariate]],linetype = .data[[covariate]])) +
-  annotate("text", x = min(df.nmdsplot$NMDS1) + 0.25, y = min(df.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsResult$stress,3))) + # Add stress to plot
+  annotate("text", x = min(df.nmdsplot$NMDS1) + 0.25, y = max(df.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsResult$stress,3))) + # Add stress to plot
   scale_color_manual(values = colors, name = legendtitle) +
   scale_x_continuous(limits = limits_x) + 
   #scale_y_continuous(limits = limits_y) + # include if you want to edit y limits
@@ -182,21 +191,38 @@ df.nmdsplot <- cbind(nmds.scores, speciesPredictorMatrix)
 
 ```
 
-#####Make plots
+##### Make plots
 ```{r}
 cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
 cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
+nmdsOrder$Season3 <- factor(nmdsOrder$Season3, levels = c("Fall", "Winter", "Spring", "Summer"))
 
-(nmds_station <- f_plotNMDS(nmdsOrder, Order_w2,  "Station", cols))
-(nmds_WY <- f_plotNMDS(nmdsOrder, Order_w2,  "fWY", cols))
+(nmds_station <- f_plotNMDS(nmdsResult = nmdsOrder, speciesPredictorMatrix = Order_w2,  covariate = "Station", colors = cols))
+
+(nmds_WY <- f_plotNMDS(nmdsOrder, Order_w2,  "fWY", cols, legendtitle = "Water Year"))
+
 (nmds_inundation <- f_plotNMDS(nmdsOrderSTTD, Order_STTD2,  "Inundation", cols))
 
-nmds_season1 <- f_plotNMDS(nmdsOrder, Order_w2,  "Season1", cols)
-(nmds_season3 <- f_plotNMDS(nmdsOrder, Order_w2,  "Season3", cols2))
-nmds_season3_STTD <- f_plotNMDS(order.nmdsplot2,species.scores2, "Season3", cols2, "Season")
+(nmds_season3 <- f_plotNMDS(nmdsOrder, Order_w2,  "Season3", cols2, legendtitle = "Season"))
+
+#nmds_season1 <- f_plotNMDS(nmdsOrder, Order_w2,  "Season1", cols)
+(nmds_season3_STTD <- f_plotNMDS(nmdsOrderSTTD, Order_STTD2, "Season3", cols2, "Season"))
 ```
 
-##### Save plots
+##### Combine NMDS plots
+```{r}
+library(ggpubr)
+
+tiff("WY2017_WY2019/figures/fig_drift_NMDS_All_Drift.tiff", res=300, width = 10, height = 8.5, units = "in",  family = "sans", compression = "lzw")
+ggarrange(nmds_station, nmds_season3, nmds_season3_STTD, nmds_inundation, ncol = 2, nrow = 2, labels = c("A", "B", "C", "D"))
+dev.off()
+
+```
+
+
+
+
+##### Save plots individually
 ```{r}
 tiff("figures/fig_drift7_NMDS_Station_Drift.tiff", res=300, width = 5, height = 3.5, units = "in",  family = "sans", compression = "lzw")
 nmds_station

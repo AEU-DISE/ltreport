@@ -1,0 +1,158 @@
+---
+title: "Phyto_CHL_Barplots"
+author: "Alli Brady"
+date: "3/23/2022"
+output: html_document
+---
+
+```{r} 
+#Probably dont need all of these
+library(ggplot2)
+library(lubridate)
+library(rcompanion)
+library(viridis)
+library(dplyr)
+library(ggthemes)
+library(tidyverse)
+library(rcartocolor)
+library(rstatix)
+library(visreg)
+library(plotly)
+library(patchwork)
+library(viridis)
+library(ggpubr)
+rm(list=ls())                     #Clean space
+dev.off()
+```
+
+```{r}
+#Bringing in Data
+setwd('C:/Users/abrady/Documents/R/ltreport/WY2017_WY2019/')
+light<-read.csv("data_clean/clean_light_dataset.csv")
+phyto<-read.csv("data_raw/LT_phyto_density.csv")
+chl<-read.csv("data_raw/LT_discrete_chla_RAW (1).csv")
+inundation <- read_csv("data_raw/InundationWY2010toWY2019.csv")
+```
+
+```{r}
+#little housekeeping
+## Editing Data 
+chl<- filter(chl,!Analyte%in% 'Pheo') # Dont need this analyte
+light2<- light[ ,c(1,2,3,6,11,26)]  #pear down to useful columns
+phyto2<-phyto[ ,c(1,2,3,37)]
+colnames(light2)[1]='Date'           # changed weird column names
+colnames(chl)[1]='StationCode'
+chl<- filter(chl,StationCode%in% c('STTD','LIS','SHR')) #Useful Stations only
+chl$Result<-as.numeric(chl$Result)  #as numeric value
+```
+
+```{r}
+ ## Summarizing Data By Date and Station
+Bio<-                            # total biovolume 
+group_by(phyto2, Date, StationCode) %>%
+summarize('biovolume' = sum(Biovolume.Density))  
+Chl<-             #summarize chlorophyl by date/station  this takes he average of the sample and replicate sample
+  group_by(chl, Date, StationCode) %>%
+  summarize('Result' = mean(Result))
+```
+
+```{r}
+## Making a water year column for datasets
+Bio$Date<-mdy(Bio$Date)
+Bio$Year<-year(Bio$Date)
+Bio$month<-month(Bio$Date)
+Chl$Date<-mdy(Chl$Date)
+Chl$Year<-year(Chl$Date)
+Chl$month<-month(Chl$Date)
+inundation$Date<-mdy(inundation$Date)
+inundation$Year<-year(inundation$Date)
+inundation$month<-month(inundation$Date)
+Bio <- mutate(Bio, month = month(Date), 
+              WaterYear = case_when(
+                month %in% c(10,11,12) ~ Year +1,
+                TRUE ~ Year
+              ))                           
+Bio$WaterYear<- as_factor(Bio$WaterYear)
+Chl<- mutate(Chl, month = month(Date),   
+             WaterYear = case_when(
+               month %in% c(10,11,12) ~ Year +1,
+               TRUE ~ Year
+             ))                           
+Chl$WaterYear<- as_factor(Chl$WaterYear)
+Chl<- filter(Chl,!(WaterYear == "2020"))   #some 2020 data got in here
+inundation<- mutate(inundation, month = month(Date), 
+                    WaterYear = case_when(
+                      month %in% c(10,11,12) ~ Year +1,
+                      TRUE ~ Year
+                    ))                           
+inundation$WaterYear<- as_factor(inundation$WaterYear)
+```
+
+```{r}
+##Set publication Theme- copied over
+windowsFonts(Arial=windowsFont("TT Arial"))
+theme_Publication <- function(base_size=12, base_family="Arial") {
+  library(grid)
+  library(ggthemes)
+  (theme_foundation(base_size=base_size, base_family=base_family)
+    + theme(plot.title = element_text(face = "bold",
+                                      size = rel(1.2), hjust = 0.5),
+            text = element_text(),
+            panel.background = element_rect(colour = NA),
+            plot.background = element_rect(colour = NA),
+            panel.border = element_rect(colour = NA),
+            axis.title = element_text(size = rel(1)),
+            axis.title.y = element_text(angle=90,vjust =2),
+            axis.title.x = element_text(vjust = -0.2),
+            axis.text = element_text(), 
+            axis.line = element_line(colour="black"),
+            axis.ticks = element_line(),
+            panel.grid.major = element_line(colour="#f0f0f0"),
+            panel.grid.minor = element_blank(),
+            legend.key = element_rect(colour = NA),
+            legend.key.size= unit(0.2, "cm"),
+            legend.spacing = unit(0, "cm"),
+            plot.margin=unit(c(10,5,5,5),"mm"),
+            strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+            strip.text = element_text(face="bold")
+    ))
+  
+}
+```
+
+```{r}
+
+#summarize Data
+ChlWY<-             #summarize  chlorophyl by WY/station  this takes he average of the sample and replicate sample
+  group_by(Chl, WaterYear, StationCode) %>%
+  summarize('Result' = mean(Result))  
+
+
+CSY<-ggplot()+                           ## Chloro by site and year
+  geom_col(data=ChlWY,aes(x=WaterYear,y=Result, fill=StationCode),
+           position = 'dodge')+
+  scale_fill_viridis(discrete=TRUE)+
+  theme_Publication()+
+  theme(axis.text.x = element_text(size = 10, angle=90)) +
+  
+  labs(x="Water Year",y="Chlorophyll (ug/L)")
+CSY
+
+```
+
+```{r}
+BioWY<-             #summarize  Phyto by WY/station  this takes he average of the sample and replicate sample
+  group_by(Bio, WaterYear, StationCode) %>%
+  summarize('biovolume' = mean(biovolume))  
+
+
+BSY<-ggplot()+                          ##Biovol by station each year
+  geom_col(data=BioWY,aes(x=WaterYear,y=biovolume, fill=StationCode),
+        position="dodge" )+
+  scale_fill_viridis(discrete=TRUE)+
+  theme_Publication()+
+  labs(x="Water Year", y="Phytoplankton Density (μm3/ml)")
+
+BSY
+```
+
