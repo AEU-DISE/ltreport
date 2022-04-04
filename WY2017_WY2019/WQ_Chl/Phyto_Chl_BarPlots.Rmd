@@ -161,7 +161,7 @@ BSY
 ```
 
 ```{r}
-write.csv(BioWY, here(root, "data_figures", "biovolume_bar.csv"), row.names = FALSE)
-write.csv(ChlWY, here(root, "data_figures", "chlorophyll_bar.csv"), row.names = FALSE)
+write.csv(Bio, here(root, "data_figures", "biovolume_bar.csv"), row.names = FALSE)
+write.csv(Chl, here(root, "data_figures", "chlorophyll_bar.csv"), row.names = FALSE)
 ```
 

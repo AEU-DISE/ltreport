@@ -19,12 +19,14 @@ library(rstatix)
 library(visreg)
 library(plotly)
 library(patchwork)
+library(here)
 ## Set WD and Bringing in Data
-setwd('C:/Users/abrady/Documents/R/ltreport/WY2017_WY2019/')
-light<-read.csv("data_clean/clean_light_dataset.csv")
-phyto<-read.csv("data_raw/LT_phyto_density.csv")
-chl<-read.csv("data_raw/LT_discrete_chla_RAW (1).csv")
-inundation <- read_csv("data_raw/InundationWY2010toWY2019.csv")
+#setwd('C:/Users/abrady/Documents/R/ltreport/WY2017_WY2019/')
+root <- "WY2017_WY2019"
+light<-read.csv(here(root, "WQ_Chl", "clean_light_dataset.csv"))
+phyto<-read.csv(here(root, "WQ_Chl", "LT_phyto_density.csv"))
+chl<-read.csv(here(root, "WQ_Chl", "LT_discrete_chla_RAW (1).csv"))
+inundation <- read_csv(here(root, "WQ_Chl", "InundationWY2010toWY2019.csv"))
 ```
 
 ```{r}
@@ -88,6 +90,15 @@ ChlTD<-filter(Chl,StationCode !="SHR")
 ChlSTTD<-filter(ChlTD,StationCode !="LIS")
 BioSTTD<-filter(BioTD, StationCode !="LIS") 
 ```
+
+```{r}
+# Write files to be combined with other plots
+write.csv(Bio, here(root, "data_figures", "biovolume_inundation.csv"), row.names = FALSE)
+write.csv(Chl, here(root, "data_figures", "chlorophyll_inundation.csv"), row.names = FALSE)
+#write.csv(BioTD, here(root, "data_figures", "biovolume_inundation.csv"), row.names = FALSE)
+#write.csv(BioTD, here(root, "data_figures", "biovolume_inundation.csv"), row.names = FALSE)
+```
+
 
 ```{r}
 ##Set publication Theme- copied over
