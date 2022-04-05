@@ -249,9 +249,9 @@ library(ggpubr)
 library(gridExtra)
 library(patchwork)
 
-(combinedBar <- ggarrange(plot_barChl, plot_barPhyto,plot_barZoop,  plot_barDrift,
-                          nrow = 4, common.legend = TRUE, heights = c(2,2,2,2.5), 
-                          align = "v"))
+# (combinedBar <- ggarrange(plot_barChl, plot_barPhyto,plot_barZoop,  plot_barDrift,
+#                           nrow = 4, common.legend = TRUE, heights = c(2,2,2,2.5), 
+#                           align = "v"))
 (combinedBar <- plot_barChl / plot_barPhyto / plot_barZoop / plot_barDrift + plot_layout(guides = 'collect') & theme(legend.position = 'bottom'))
 # annotatedBar <- annotate_figure(combinedBar, 
 #                 left = text_grob(expression(Catch~Per~Unit~Effort~(Count~m^-3)), color = "black", rot = 90, size = 14))
@@ -279,7 +279,7 @@ color = c("gray82", "white")
    scale_colour_manual(values = c("darkgreen", "hotpink3", "black")) + 
     scale_alpha_manual(values = c(1, 0), guide = "none") +
    scale_linetype_manual(values = c("dotted", "solid", "longdash"))+
-  labs(title = "A) Chlorophyll", y = expression(Chlorophyll~(mgL~1)), fill = "Inundation") +
+  labs(title = "A) Chlorophyll", y = expression(Chlorophyll~(mg~L^-1)), fill = "Inundation") +
  scale_fill_manual(values = color) +
     theme_bw() + 
   theme_ltreport + 
