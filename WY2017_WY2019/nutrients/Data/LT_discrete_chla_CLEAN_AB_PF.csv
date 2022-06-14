@@ -1,0 +1,496 @@
+StationCode,Date,Time,Analyte,Result,Units,Method,Depth,Purpose
+LIS,10/4/2016,10:31,Chla,11.07,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,10/4/2016,10:31,Chla,9.8,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,10/4/2016,11:33,Chla,4.63,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,10/4/2016,11:33,Chla,3.69,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+SHR,10/5/2016,10:25,Chla,1.16,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,10/5/2016,10:25,Chla,1.01,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+STTD,10/18/2016,9:13,Chla,2.14,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,10/18/2016,9:13,Chla,2.12,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,10/18/2016,9:27,Chla,4.84,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,10/18/2016,9:27,Chla,4.8,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,10/19/2016,10:30,Chla,0.8,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,10/19/2016,10:30,Chla,0.82,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,10/31/2016,9:18,Chla,2.44,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,10/31/2016,9:18,Chla,2.35,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,10/31/2016,11:27,Chla,5.82,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,10/31/2016,11:27,Chla,5.72,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/1/2016,10:00,Chla,1.36,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/1/2016,10:00,Chla,1.59,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/14/2016,9:00,Chla,3.16,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/14/2016,9:00,Chla,3.3,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/14/2016,10:48,Chla,17.52,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/14/2016,10:48,Chla,17.83,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/18/2016,9:47,Chla,0.7,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/18/2016,9:47,Chla,0.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/28/2016,9:28,Chla,13.84,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/28/2016,9:28,Chla,11.7,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/28/2016,11:31,Chla,5.18,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/28/2016,11:31,Chla,4.88,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/29/2016,10:15,Chla,1.65,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/29/2016,10:15,Chla,1.6,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/13/2016,9:17,Chla,5.72,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/13/2016,9:17,Chla,5.72,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/13/2016,12:39,Chla,6.53,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/13/2016,12:39,Chla,5.27,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/14/2016,8:28,Chla,3.05,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/14/2016,8:28,Chla,2.63,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/21/2016,8:11,Chla,1.7,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/21/2016,8:11,Chla,1.44,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/21/2016,1:21,Chla,2.68,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/21/2016,1:21,Chla,2.84,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/21/2016,3:35,Chla,2.23,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/21/2016,3:35,Chla,2.25,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/27/2016,10:00,Chla,5.83,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/27/2016,10:00,Chla,6.08,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/27/2016,1:08,Chla,7.24,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/27/2016,1:08,Chla,7,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/29/2016,8:12,Chla,1.69,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/29/2016,8:12,Chla,1.58,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/10/2017,9:41,Chla,2.49,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/10/2017,9:41,Chla,2.62,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/11/2017,10:50,Chla,1.83,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/11/2017,10:50,Chla,1.94,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/11/2017,12:26,Chla,1.06,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/11/2017,12:26,Chla,1.2,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/18/2017,11:00,Chla,1.3,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/18/2017,11:00,Chla,1.29,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/18/2017,3:50,Chla,1.6,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/18/2017,3:50,Chla,1.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/23/2017,9:45,Chla,1.14,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/23/2017,9:45,Chla,1.22,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/24/2017,9:20,Chla,1.19,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/24/2017,9:20,Chla,1.12,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/24/2017,3:27,Chla,1.05,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/24/2017,3:27,Chla,0.98,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/31/2017,12:49,Chla,1.48,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,2/2/2017,10:10,Chla,2.23,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,2/2/2017,10:10,Chla,2.35,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+STTD,2/6/2017,10:45,Chla,1.71,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/6/2017,10:45,Chla,1.7,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/6/2017,3:00,Chla,2.12,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/6/2017,3:00,Chla,2.1,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/7/2017,9:00,Chla,1.48,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/7/2017,9:00,Chla,1.48,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,2/16/2017,11:50,Chla,0.83,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,2/16/2017,11:50,Chla,0.79,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+STTD,2/22/2017,9:30,Chla,0.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/22/2017,9:30,Chla,0.79,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/22/2017,11:45,Chla,0.57,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/22/2017,11:45,Chla,0.78,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/23/2017,8:08,Chla,0.67,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/23/2017,8:08,Chla,0.71,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,3/8/2017,8:05,Chla,2.75,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/8/2017,8:05,Chla,2.79,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/9/2017,10:12,Chla,2.2,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/9/2017,10:12,Chla,1.79,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/9/2017,2:36,Chla,2.31,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/9/2017,2:36,Chla,2.4,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/14/2017,9:40,Chla,39.09,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,3/14/2017,9:40,Chla,40.82,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+LIS,3/14/2017,3:42,Chla,42.48,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,3/14/2017,3:42,Chla,41.53,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+SHR,3/21/2017,10:52,Chla,3.2,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/21/2017,10:52,Chla,3.12,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/22/2017,9:30,Chla,18.34,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/22/2017,9:30,Chla,18.17,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/22/2017,2:22,Chla,9.98,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/22/2017,2:22,Chla,9.22,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/28/2017,9:05,Chla,15.93,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,3/28/2017,9:05,Chla,15.11,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+SHR,4/4/2017,8:40,Chla,6.88,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/4/2017,8:40,Chla,6.93,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/5/2017,9:46,Chla,23.37,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/5/2017,9:46,Chla,24.21,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/5/2017,2:17,Chla,22.27,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/5/2017,2:17,Chla,21.58,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/13/2017,10:19,Chla,7.15,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,4/13/2017,10:19,Chla,13.97,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+STTD,4/18/2017,9:40,Chla,5.39,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/18/2017,9:40,Chla,5.19,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/18/2017,2:09,Chla,4.1,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/18/2017,2:09,Chla,3.86,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,4/19/2017,8:48,Chla,2.45,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/19/2017,8:48,Chla,2.56,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/26/2017,9:49,Chla,5.06,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,4/26/2017,9:49,Chla,4.9,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+LIS,4/26/2017,12:03,Chla,14.76,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,4/26/2017,12:03,Chla,5.39,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+LIS,5/3/2017,12:39,Chla,4.64,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/3/2017,12:39,Chla,4.83,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/4/2017,10:08,Chla,2.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/4/2017,10:08,Chla,3.01,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/5/2017,10:25,Chla,13.62,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/5/2017,10:25,Chla,13.5,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/9/2017,10:23,Chla,28.28,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,5/9/2017,10:23,Chla,28.88,µg/L,Std Method 10200 H [1]*,1,Replicate Sample
+STTD,5/16/2017,10:15,Chla,45.14,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/16/2017,10:15,Chla,46.78,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/16/2017,12:45,Chla,19.73,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/16/2017,12:45,Chla,19.36,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/17/2017,7:38,Chla,2.6,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/17/2017,7:38,Chla,2.64,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/30/2017,10:08,Chla,37.62,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/30/2017,10:08,Chla,38.11,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/30/2017,11:05,Chla,29.84,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/30/2017,11:05,Chla,31.58,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/31/2017,9:18,Chla,2.29,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/31/2017,9:18,Chla,2.31,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,6/12/2017,10:30,Chla,18.23,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,6/12/2017,10:30,Chla,17.36,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/12/2017,12:14,Chla,15.65,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,6/12/2017,12:14,Chla,15.09,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,6/13/2017,8:15,Chla,2.8,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,6/13/2017,8:15,Chla,2.69,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/21/2017,9:12,Chla,18.71,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,6/21/2017,9:12,Chla,18.24,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,6/27/2017,8:56,Chla,2.7,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,6/27/2017,8:56,Chla,2.63,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/28/2017,9:25,Chla,15.37,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,6/28/2017,11:33,Chla,2.47,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,7/6/2017,11:38,Chla,25.33,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,7/6/2017,12:35,Chla,5.05,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,7/13/2017,11:35,Chla,43.93,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,7/13/2017,12:35,Chla,3.27,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,7/18/2017,8:45,Chla,3.58,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,7/18/2017,8:45,Chla,3.61,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,7/19/2017,8:34,Chla,10.44,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,7/19/2017,10:10,Chla,5.09,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,7/27/2017,12:02,Chla,3.03,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,7/27/2017,12:41,Chla,14.99,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,8/1/2017,8:55,Chla,3.59,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,8/1/2017,8:55,Chla,5.15,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,8/2/2017,8:51,Chla,15.97,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,8/2/2017,8:51,Chla,10.42,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,8/2/2017,10:32,Chla,5.62,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,8/15/2017,9:36,Chla,3.73,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,8/15/2017,9:36,Chla,2.95,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,8/29/2017,9:05,Chla,2.12,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,8/29/2017,9:05,Chla,2.58,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,9/12/2017,11:12,Chla,2.46,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,9/12/2017,11:12,Chla,3.07,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,9/19/2017,10:40,Chla,2.71,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,9/19/2017,10:40,Chla,2.84,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,9/20/2017,10:26,Chla,2.39,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,9/20/2017,10:26,Chla,2.84,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,9/20/2017,12:45,Chla,50.29,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,9/20/2017,12:45,Chla,50.29,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,10/3/2017,9:48,Chla,2.19,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,10/3/2017,9:48,Chla,2.27,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,10/4/2017,10:05,Chla,1.96,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,10/4/2017,10:05,Chla,1.88,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,10/4/2017,12:31,Chla,4.75,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,10/4/2017,12:31,Chla,5,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,10/17/2017,10:48,Chla,3.04,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,10/17/2017,10:48,Chla,2.61,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,10/19/2017,10:20,Chla,1.18,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,10/19/2017,10:20,Chla,1.16,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,10/19/2017,10:23,Chla,5.09,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,10/19/2017,10:23,Chla,5.74,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/1/2017,9:37,Chla,2.09,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/1/2017,9:37,Chla,1.75,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/2/2017,9:27,Chla,1.63,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/2/2017,9:27,Chla,1.6,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/2/2017,11:36,Chla,6.81,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/2/2017,11:36,Chla,6.41,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/14/2017,9:20,Chla,3.59,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/14/2017,9:20,Chla,2.3,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/15/2017,9:07,Chla,2.03,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/15/2017,9:07,Chla,1.98,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/15/2017,11:21,Chla,13.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/15/2017,11:21,Chla,11.64,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/28/2017,9:30,Chla,2.84,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/28/2017,9:30,Chla,2.7,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/29/2017,8:50,Chla,4.73,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/29/2017,8:50,Chla,4.55,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/29/2017,11:30,Chla,14.61,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/29/2017,11:30,Chla,13.9,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/13/2017,9:41,Chla,1.25,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/13/2017,9:41,Chla,1.09,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/13/2017,12:21,Chla,33.19,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/13/2017,12:21,Chla,31.96,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/14/2017,9:32,Chla,2.66,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/14/2017,9:32,Chla,3.17,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/19/2017,9:50,Chla,4.13,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/19/2017,9:50,Chla,3.72,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/20/2017,10:00,Chla,1.58,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/20/2017,10:00,Chla,1.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/20/2017,12:31,Chla,15.67,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/20/2017,12:31,Chla,24.58,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/2/2018,10:49,Chla,27.78,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/2/2018,10:49,Chla,17.69,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/2/2018,1:06,Chla,26.16,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/2/2018,1:06,Chla,28.12,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/4/2018,9:24,Chla,2.47,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/4/2018,9:24,Chla,3.13,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/17/2018,9:45,Chla,10.5,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/17/2018,9:45,Chla,9.93,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/17/2018,3:00,Chla,12.64,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/17/2018,3:00,Chla,12.22,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/18/2018,9:27,Chla,3.23,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/18/2018,9:27,Chla,5.41,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/30/2018,9:50,Chla,15.54,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/30/2018,9:50,Chla,16.48,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/30/2018,1:05,Chla,14.5,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/30/2018,1:05,Chla,17.5,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/31/2018,10:11,Chla,2.94,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/31/2018,10:11,Chla,2.21,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,2/13/2018,9:15,Chla,11.52,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/13/2018,9:15,Chla,12.74,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/13/2018,11:24,Chla,12.88,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/13/2018,11:24,Chla,12.52,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/14/2018,10:02,Chla,2.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/14/2018,10:02,Chla,2.74,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/27/2018,10:17,Chla,3.36,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/27/2018,10:17,Chla,3.57,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,2/28/2018,9:54,Chla,34.9,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/28/2018,9:54,Chla,39.47,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/28/2018,12:19,Chla,24.76,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/28/2018,12:19,Chla,26.14,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,3/13/2018,9:40,Chla,3.85,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/13/2018,9:40,Chla,4.3,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/14/2018,9:48,Chla,13.66,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/14/2018,9:48,Chla,13.55,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/14/2018,12:20,Chla,19.06,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/14/2018,12:20,Chla,18.59,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/28/2018,9:30,Chla,14.67,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/28/2018,9:30,Chla,14.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/28/2018,12:14,Chla,18.38,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/28/2018,12:14,Chla,19.61,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,3/29/2018,8:57,Chla,3.03,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/29/2018,9:03,Chla,2.91,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/10/2018,11:00,Chla,4.61,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/10/2018,11:00,Chla,6.28,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/10/2018,12:00,Chla,3.66,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/10/2018,3:17,Chla,3.57,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/11/2018,9:18,Chla,2.73,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/11/2018,12:00,Chla,2.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,4/24/2018,10:50,Chla,5.52,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/24/2018,10:50,Chla,5.56,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/25/2018,9:45,Chla,17,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/25/2018,10:23,Chla,16.6,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/25/2018,12:59,Chla,27.3,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/25/2018,12:59,Chla,28.2,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/1/2018,9:40,Chla,11.5,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/1/2018,9:40,Chla,11.3,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/1/2018,12:05,Chla,13.6,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/1/2018,12:05,Chla,14.1,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/2/2018,10:12,Chla,6.06,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/2/2018,10:12,Chla,6.71,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/15/2018,9:24,Chla,3.24,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/15/2018,9:24,Chla,9.64,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/15/2018,11:27,Chla,9.97,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/15/2018,11:27,Chla,3.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/16/2018,9:47,Chla,3.32,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/16/2018,9:47,Chla,3.7,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/29/2018,9:46,Chla,4.14,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/29/2018,9:46,Chla,4.02,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/30/2018,11:40,Chla,1.36,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/30/2018,11:40,Chla,1.17,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/30/2018,1:00,Chla,19.82,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/30/2018,1:00,Chla,20.98,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,6/12/2018,10:35,Chla,0.93,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,6/12/2018,10:35,Chla,0.85,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/12/2018,12:38,Chla,15.7,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,6/12/2018,12:38,Chla,16.3,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,6/13/2018,9:40,Chla,2.83,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,6/13/2018,9:40,Chla,3.19,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,6/26/2018,9:47,Chla,1.72,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,6/26/2018,9:47,Chla,1.88,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/26/2018,12:01,Chla,7.89,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,6/26/2018,12:01,Chla,7.19,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,6/27/2018,9:35,Chla,3.75,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,6/27/2018,9:35,Chla,2.56,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,7/12/2018,10:37,Chla,2.33,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,7/12/2018,10:37,Chla,2.33,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,7/25/2018,9:59,Chla,2.37,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,7/25/2018,9:59,Chla,2.85,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,8/9/2018,9:05,Chla,2.53,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,8/9/2018,9:05,Chla,1.45,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,8/23/2018,8:55,Chla,1.35,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,8/23/2018,8:55,Chla,1.39,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,9/6/2018,9:26,Chla,1.69,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,9/6/2018,9:26,Chla,1.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,9/20/2018,9:45,Chla,1.14,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,9/20/2018,9:45,Chla,1.54,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,10/11/2018,9:07,Chla,0.55,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,10/11/2018,9:07,Chla,0.68,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,10/26/2018,9:01,Chla,0.98,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,10/26/2018,9:01,Chla,0.89,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/8/2018,9:42,Chla,1.11,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/8/2018,9:42,Chla,1.02,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/8/2018,12:27,Chla,4.28,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/8/2018,12:27,Chla,4.62,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/9/2018,9:29,Chla,0.86,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/9/2018,9:29,Chla,0.84,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,11/26/2018,9:13,Chla,4.9,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,11/26/2018,9:13,Chla,4.87,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,11/26/2018,10:20,Chla,0.85,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,11/26/2018,10:20,Chla,0.57,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,11/27/2018,9:20,Chla,2.9,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,11/27/2018,9:20,Chla,3.23,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/11/2018,10:45,Chla,0.83,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/11/2018,10:45,Chla,0.87,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/11/2018,1:30,Chla,4.3,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/11/2018,1:30,Chla,3.66,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/12/2018,11:00,Chla,1.43,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/12/2018,11:00,Chla,1.4,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,12/26/2018,10:35,Chla,1.63,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,12/26/2018,10:35,Chla,1.77,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,12/26/2018,11:48,Chla,4.32,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,12/26/2018,11:48,Chla,4.76,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,12/27/2018,10:27,Chla,1.81,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,12/27/2018,10:27,Chla,1.97,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/8/2019,9:53,Chla,4.2,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/8/2019,9:53,Chla,4.24,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/8/2019,1:59,Chla,5.29,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/8/2019,1:59,Chla,5.32,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/9/2019,9:06,Chla,5.61,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/9/2019,9:06,Chla,2.97,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,1/22/2019,11:37,Chla,2.9,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,1/22/2019,11:37,Chla,2.84,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,1/22/2019,2:29,Chla,3.85,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,1/22/2019,2:29,Chla,3.84,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,1/23/2019,9:45,Chla,2.1,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,1/23/2019,9:45,Chla,2.64,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/4/2019,9:16,Chla,4.66,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/4/2019,9:16,Chla,4.09,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,2/5/2019,10:25,Chla,3.65,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/5/2019,10:25,Chla,3.65,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/5/2019,2:50,Chla,2.81,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/5/2019,2:50,Chla,2.83,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,2/19/2019,10:34,Chla,1.5,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/19/2019,10:34,Chla,1.67,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/19/2019,2:31,Chla,1.66,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/19/2019,2:31,Chla,1.73,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/20/2019,9:18,Chla,1.49,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/20/2019,9:18,Chla,1.08,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,2/26/2019,10:45,Chla,18.52,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,2/26/2019,10:45,Chla,20.37,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,2/26/2019,12:56,Chla,12.06,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,2/26/2019,12:56,Chla,10.46,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,2/27/2019,8:40,Chla,1.3,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,2/27/2019,8:40,Chla,0.66,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/11/2019,11:43,Chla,0.97,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/11/2019,11:43,Chla,0.99,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/11/2019,2:41,Chla,1.42,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/11/2019,2:41,Chla,1.39,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,3/12/2019,9:12,Chla,1.28,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/12/2019,9:12,Chla,0.97,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/20/2019,9:59,Chla,11.58,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/20/2019,9:59,Chla,10.16,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/20/2019,2:20,Chla,12.09,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/20/2019,2:20,Chla,12.8,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,3/21/2019,8:44,Chla,4.89,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/21/2019,8:44,Chla,4.97,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,3/28/2019,10:00,Chla,24.7,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,3/28/2019,10:00,Chla,21.9,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,3/28/2019,12:52,Chla,18.9,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,3/28/2019,12:52,Chla,20.6,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,3/29/2019,9:05,Chla,2.23,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,3/29/2019,9:05,Chla,3.65,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/3/2019,10:25,Chla,11,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/3/2019,10:25,Chla,6.18,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/3/2019,2:31,Chla,10.5,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/3/2019,2:31,Chla,13.9,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,4/4/2019,9:25,Chla,4.08,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/4/2019,9:25,Chla,4.16,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/8/2019,9:56,Chla,4.81,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/8/2019,9:56,Chla,3.98,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/8/2019,11:56,Chla,2.06,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/8/2019,11:56,Chla,1.4,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,4/9/2019,9:10,Chla,2.64,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/9/2019,9:10,Chla,2.25,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/15/2019,11:06,Chla,3.75,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/15/2019,11:06,Chla,5.37,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/15/2019,1:33,Chla,2.45,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/15/2019,1:33,Chla,3.4,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,4/16/2019,9:13,Chla,2.26,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/16/2019,9:13,Chla,2.4,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,4/22/2019,9:58,Chla,17.4,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,4/22/2019,9:58,Chla,13.4,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,4/22/2019,12:15,Chla,24.51,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,4/22/2019,12:15,Chla,12.9,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,4/23/2019,9:10,Chla,3.76,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,4/23/2019,9:10,Chla,3.27,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/6/2019,9:53,Chla,8.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/6/2019,9:53,Chla,7.95,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/6/2019,12:35,Chla,13.6,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/6/2019,12:35,Chla,15.5,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/7/2019,10:13,Chla,0.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/7/2019,10:13,Chla,2.36,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,5/20/2019,10:10,Chla,10.3,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,5/20/2019,10:10,Chla,8.91,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,5/20/2019,1:12,Chla,8.96,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,5/20/2019,1:12,Chla,10.3,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,5/21/2019,9:59,Chla,2.57,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,5/21/2019,9:59,Chla,2.34,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,6/3/2019,9:22,Chla,3.26,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,6/3/2019,9:22,Chla,3.77,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/3/2019,11:45,Chla,6.86,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,6/3/2019,11:45,Chla,9.63,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,6/4/2019,9:11,Chla,1.93,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,6/4/2019,9:11,Chla,1.1,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,6/17/2019,10:15,Chla,1.48,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,6/17/2019,10:15,Chla,1,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,6/17/2019,11:47,Chla,4,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,6/17/2019,11:47,Chla,5.44,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,6/18/2019,9:36,Chla,1.29,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,6/18/2019,9:36,Chla,2.01,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,7/1/2019,9:27,Chla,1.36,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,7/1/2019,9:27,Chla,0.79,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,7/1/2019,11:09,Chla,16.9,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,7/1/2019,11:09,Chla,6.54,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,7/2/2019,9:56,Chla,2.26,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,7/2/2019,9:56,Chla,2.21,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+STTD,7/15/2019,9:23,Chla,0.83,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+STTD,7/15/2019,9:23,Chla,1.95,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+LIS,7/15/2019,11:07,Chla,7.87,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+LIS,7/15/2019,11:07,Chla,9.04,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,7/16/2019,9:40,Chla,2.36,µg/L,Std Method 10200 H [1]*,0,Normal Sample
+SHR,7/16/2019,9:40,Chla,2.28,µg/L,Std Method 10200 H [1]*,0,"Replicate, Specific Analyte(s)"
+SHR,8/5/2019,9:14,Chla,2.3,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,8/5/2019,9:14,Chla,2.13,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,8/6/2019,11:28,Chla,18.4,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,8/6/2019,11:28,Chla,18,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,8/7/2019,12:39,Chla,1.25,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,8/7/2019,12:39,Chla,1.26,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,8/7/2019,12:39,Chla,0.96,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+SHR,8/19/2019,10:00,Chla,1.43,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,8/19/2019,10:00,Chla,2.05,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,8/20/2019,11:23,Chla,15.4,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,8/20/2019,11:30,Chla,20.4,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,8/21/2019,12:20,Chla,2.93,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,8/21/2019,12:20,Chla,2.21,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,8/21/2019,12:20,Chla,3.45,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+LIS,9/3/2019,11:18,Chla,5.56,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,9/3/2019,11:18,Chla,5.11,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,9/3/2019,11:18,Chla,3.97,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+STTD,9/4/2019,12:02,Chla,9.1,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,9/4/2019,12:02,Chla,9.69,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,9/4/2019,12:25,Chla,8.7,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+SHR,9/5/2019,9:45,Chla,1.49,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,9/5/2019,9:45,Chla,0.75,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+SHR,9/5/2019,10:07,Chla,0.74,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+SHR,9/16/2019,9:40,Chla,1.4,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,9/16/2019,12:00,Chla,3.06,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,9/17/2019,10:14,Chla,6.74,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,9/17/2019,10:14,Chla,6.76,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,9/18/2019,11:59,Chla,5.46,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,9/18/2019,11:59,Chla,7.94,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,9/18/2019,12:21,Chla,6.73,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+SHR,9/30/2019,9:23,Chla,1.74,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,9/30/2019,9:23,Chla,1.89,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,10/1/2019,10:30,Chla,18.09,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,10/1/2019,10:30,Chla,13.71,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,10/2/2019,11:33,Chla,1.28,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,10/2/2019,11:33,Chla,1.78,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,10/2/2019,11:50,Chla,1.29,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+SHR,10/14/2019,9:57,Chla,1.13,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+SHR,10/14/2019,9:57,Chla,1.13,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,10/15/2019,12:47,Chla,9.83,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+LIS,10/15/2019,12:47,Chla,10,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+LIS,10/15/2019,1:16,Chla,9.62,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample
+STTD,10/16/2019,12:03,Chla,1.01,µg/L,Std Method 10200 H [1]*,1,Normal Sample
+STTD,10/16/2019,12:03,Chla,0.96,µg/L,Std Method 10200 H [1]*,1,"Replicate, Specific Analyte(s)"
+STTD,10/16/2019,12:18,Chla,1.2,µg/L,Std Method 10200 H [1]*,1,Duplicate Sample

@@ -1,0 +1,480 @@
+---
+title: "Model - LT Report"
+author: "Parisa Farman"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+###Step 1: Install packages 
+```{r}
+
+library(tidyverse)
+library(readxl)
+library(lubridate)
+library(viridis)
+library(dplyr)
+library(scales)
+library(ggthemes)
+library(visreg)
+library(tiff)
+library(grid)
+library(gridExtra)
+library(here)
+```
+
+### Step 2: Set WD, read in data and restructure data to working data frame
+```{r}
+#setwd("X:\\YB_Manuscripts, Reports, Newsletters (AEU)\\YoloBypass_AnnualReport_LowerTrophic\\Lower Trophic Report_2017-2019\\Nutrients\\Data")
+tiff
+                              
+#Filter out analytes of interest
+physanalyte<-filter(phys,Analyte %in% c("DisAmmonia", "DisNitrateNitrite","DisSilica","DOP"))
+
+#Remove labeled duplicates, remove irrelevant columns 
+phys_normal <- physanalyte %>%
+  filter(Purpose == "Normal Sample") %>%
+  group_by(StationCode,Date,Time,Analyte) %>%
+  slice(1) %>% select(-Units,-Method,-Depth)
+
+#Removing duplicates that aren't labeled 
+phys_normal %>% group_by (StationCode, Date, Analyte) %>% filter(duplicated(Result))
+
+#Flip to wide format 
+phys_wide<-phys_normal %>% pivot_wider(names_from="Analyte", values_from ="Result")
+
+#Add in reporting limits for each analyte and condition by date, note that this step just creates new columns with the RL for each analyte 
+phys_RL<-phys_wide %>% mutate(RL_DisAmmonia=ifelse(Date>="2018-11-27", 0.05, 0.01), RL_DisNitrateNitrite=ifelse(Date>="2018-11-27", 0.05, 0.01),
+RL_DisSilica=0.1,RL_DOP=ifelse(Date>="2018-11-27", 0.05, 0.01)) 
+```              
+
+###Step 3: Create RL columns and create functions 
+``` {r}
+#Tell R which columns are RL and which are real value columns 
+RL_columns<-grep('RL_*',colnames(phys_RL))
+
+val_columns<-c(5:8)
+
+
+#Define functions
+zip <- function(...) { # based off Python zip
+  mapply(list, ..., SIMPLIFY = FALSE)
+}
+#Mapply function is used to apply a function to multiple list or vector arguments. Simplify: attempt to reduce the result to a vector, matrix\ runs function on matrix, takes place of for loop, false returns a dataframe rather than a matrix which is what we want 
+#It's important that our results have the same amount of significant figures 
+sigfigs <- function(x){ # to determine # of sigfigs
+  orig_scipen <- getOption("scipen")
+  options(scipen = 999)
+  on.exit(options(scipen = orig_scipen))
+
+  x <- as.character(x)
+  x <- sub("\\.", "", x)
+  x <- gsub("(^0+|0+$)", "", x)
+  nchar(x)
+}
+#this step is to conduct a uniform sample to insert real values into the <R.L. occurances 
+samp_unif <- function(val_columns,RL_columns){ # the sampling function to go into lapply
+  signif(runif(length(val_columns),0,RL_columns)[seq(val_columns)],digits = sigfigs(RL_columns))
+}
+
+```
+
+### Step 4: Format data 
+```{r}
+
+#Needs to be NA so function can read it 
+
+df=phys_RL %>% mutate(DisAmmonia=replace(DisAmmonia,DisAmmonia=="< R.L.",NA), DisNitrateNitrite=replace(DisNitrateNitrite,DisNitrateNitrite=="< R.L.",NA), DisSilica=replace(DisSilica, DisSilica=="< R.L.",NA), DOP=replace(DOP,DOP=="< R.L.",NA))
+
+#Change results from characters to numeric values 
+
+#str(df)
+df$DisAmmonia <- as.numeric(as.character(df$DisAmmonia))
+df$DisNitrateNitrite <- as.numeric(as.character(df$DisNitrateNitrite))
+df$DisSilica <- as.numeric(as.character(df$DisSilica))
+df$DOP <- as.numeric(as.character(df$DOP))
+df$Date <- as.Date(df$Date)
+
+#Get rid of WY 2020 values 
+
+df <- filter(df, Date < "2019-10-1")
+
+```
+###Step 5: Prep for running models 
+
+```{r}
+#Use zip function to create a new data frame that can be used to run models 
+df_zip <- zip(df[val_columns],df[RL_columns])
+
+#Define priors for func, consider using n=10
+models <- list()
+n <- 10
+
+#Define new dataframe which will use lapply to create a uniform distribution of values for <R.L. occurances 
+for (n in seq(n)) {
+  # add in random vals
+  df_iter <- df
+  df_iter[val_columns] <- lapply(df_zip, function(x) ifelse(is.na(x[[1]]), samp_unif(x[[1]],x[[2]]), x[[1]]))}
+ 
+#check new data frame structure 
+#str(df_iter)
+
+```
+
+###Step 6: Remove outliers (Outliers determined in Plot Code)
+
+```{r}
+df_iter$Index <- 1:nrow(df_iter)
+df_iter <- df_iter %>% mutate(DisNitrateNitrite = replace(DisNitrateNitrite, Index==179, NA)) %>% mutate(DisNitrateNitrite = replace(DisNitrateNitrite, Index==204, NA)) %>% mutate(DisAmmonia =replace(DisAmmonia, Index==24, NA))
+```
+
+###Step 7: Run models on relationships between analytes that we're interested in, one is the predicting factor of the the other, so for aov(Analyte ~ Year, Dataframe) Year is a predicting factor of the analyte. In addition explore residuals - check for normal distribution, variation, can extract residuals from each model using function resid,  plot residuals against analyte in model (plot E against Dis NitrateNitrate etc), 
+
+```{r}  
+ #1 
+  modelDNNDA <-lm(log(DisNitrateNitrite) ~ log(DisAmmonia), df_iter)
+  summary(modelDNNDA)
+  hist(log(df_iter$DisAmmonia))
+  hist(log(df_iter$DisNitrateNitrite))
+  par(mfrow = c(2,2)) 
+  plot(modelDNNDA, add.smooth = FALSE)
+  EDNNDA <- resid(modelDNNDA)
+  hist(EDNNDA)
+  #very significant, can indicate nitrification plays a role but still unclear
+
+#in archive file, model between calcium and phosphorus 
+  
+#2
+  modelDSDNN <- lm (log(DisSilica) ~ log(DisNitrateNitrite),   df_iter)
+  summary(modelDSDNN)
+  hist(log(df_iter$DisSilica))
+  hist(log(df_iter$DisNitrateNitrite))
+  par(mfrow = c(2,2)) 
+  plot(modelDSDNN, add.smooth = FALSE)
+  EDSDNN <- resid(modelDSDNN)
+  hist(EDSDNN)
+  #significant 
+  
+```
+
+### Step 8: Create models for analytes vs WaterYear, check residuals 
+
+```{r}
+#create variable for year and month, water year = case_when(Month %in% c(10,11,12) ~ Year + 1, TRUE = year) need to add mutate function 
+df_iter$Year <- year(df_iter$Date)
+df_iter$Month <- factor(month(df_iter$Date))
+mymonths <- c("Jan","Feb","Mar",
+              "Apr","May","Jun",
+              "Jul","Aug","Sep",
+              "Oct", "Nov", "Dec")
+#add abbreviated month name
+df_iter$MonthAbb <- mymonths[df_iter$Month]
+#set order of months
+df_iter$MonthAbb <-ordered(df_iter$MonthAbb,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
+
+###breaking down year by water year   
+df_iter$Month <- as.numeric(as.factor(df_iter$Month))
+#str(df_iter)
+
+df_iter_WY <- mutate(df_iter, WaterYear=case_when(Month %in% c(10,11,12) ~ Year+1, TRUE ~ Year))
+
+df_iter_WY$WaterYear <- as.factor(df_iter_WY$WaterYear)
+#str(df_iter_WY) ###make Year a factor 
+
+WYModel1 <- aov(log(DisAmmonia) ~ WaterYear, df_iter_WY)
+summary(WYModel1)
+
+WYModel2 <- aov(log(DisNitrateNitrite) ~ WaterYear, df_iter_WY)
+summary(WYModel2)
+
+WYModel3 <- aov(log(DisSilica) ~ WaterYear, df_iter_WY)
+summary(WYModel3)
+
+WYModel4 <- aov(log(DOP) ~ WaterYear, df_iter_WY)
+summary(WYModel4)
+
+####None of these are significant, water year does not impact analytes 
+### Changed this to factor and now they are all significant
+```
+
+###Step 9: Look at how chlorophyll and nutrients are related 
+
+```{r}
+chla_data <- read_excel(path="LT_discrete_chla_RAW_2022_PF.xlsx")
+chla_data$Date <- as.Date(chla_data$Date)
+chla_data$Result <- as.numeric(chla_data$Result)
+str(chla_data)
+
+chla_data_filtered <- chla_data %>% filter(Analyte=="Chla") %>% select(-Units,-Method,-Depth) %>% group_by(Date, StationCode) %>% dplyr::summarize(Result = mean(Result)) %>% filter (Date < "2019-10-01")
+
+
+chla_nutrients <- merge(x=df_iter,              
+              y=chla_data_filtered,
+              by= c('StationCode','Date'),
+              all=TRUE)
+
+modelchDA <-lm(log(Result) ~ log(DisAmmonia), chla_nutrients)
+  summary(modelchDA)
+  ##significant p value = 0.312
+  #hist(chla_nutrients$Result)
+  #hist(log(chla_nutrients$Result))
+  par(mfrow = c(2,2)) 
+  plot(modelchDA, add.smooth = FALSE)
+  EchDA <- resid(modelchDA)
+  hist(EchDA)
+  
+modelDNNch <-lm(log(Result) ~ log(DisNitrateNitrite), chla_nutrients)
+  summary(modelDNNch)
+  par(mfrow = c(2,2)) 
+  plot(modelDNNch, add.smooth = FALSE)
+  EDNNch <- resid(modelDNNch)
+  hist(EDNNch)  
+  
+modelDSch <-lm(log(Result) ~ log(DisSilica), chla_nutrients)
+  summary(modelDSch)
+  ##not significant 
+  
+modelDOPch <-lm(log(Result) ~ log(DOP), chla_nutrients)
+  summary(modelDOPch)
+  par(mfrow = c(2,2)) 
+  plot(modelDOPch, add.smooth = FALSE)
+  EDOPch <- resid(modelDOPch)
+  hist(EDOPch) 
+  #significant
+```
+
+###Step 10.1: Consider how seasons affect nutrient concentrations do over, original in archive code 
+```{r}
+df_iter_seasons <- df_iter_WY %>% mutate(Seasons = ifelse(MonthAbb %in% c("Jan", "Feb", "Mar"), "Winter", ifelse(MonthAbb %in% c("Apr", "May", "Jun"), "Spring", ifelse(MonthAbb %in% c("Jul", "Aug", "Sep"), "Summer", ifelse(MonthAbb %in% c("Oct", "Nov", "Dec"), "Fall", NA)))))
+
+df_iter_seasons$StationCode <- factor(df_iter_seasons$StationCode, levels = c("LIS", "STTD", "SHR"))
+
+SeasonDA <- aov(log(DisAmmonia) ~ Seasons*StationCode, df_iter_seasons)
+summary(SeasonDA)
+##Season not significant, site significant 
+TukeySeasonDA <- TukeyHSD(x=SeasonDA)
+visreg(SeasonDA,"StationCode")
+
+SeasonDNN <- aov(log(DisNitrateNitrite) ~ Seasons*StationCode, df_iter_seasons)
+summary(SeasonDNN)
+#All significant 
+#Run Tukey test 
+TUKEYSeasonDNN <- TukeyHSD(x=SeasonDNN)
+visreg(SeasonDNN,"StationCode")
+visreg(SeasonDNN,"Seasons")
+visreg(SeasonDNN,"StationCode", by="Seasons")
+visreg(SeasonDNN,"Seasons", by="StationCode")
+
+
+SeasonDS <- aov(log(DisSilica) ~ Seasons*StationCode, df_iter_seasons)
+summary(SeasonDS)
+TUKEYSeasonDS <- TukeyHSD(x=SeasonDS)
+visreg(SeasonDS,"StationCode")
+visreg(SeasonDS,"Seasons")
+visreg(SeasonDS,"StationCode", by="Seasons")
+visreg(SeasonDS,"Seasons", by="StationCode")
+
+SeasonDOP <- aov(log(DOP) ~ Seasons*StationCode, df_iter_seasons)
+summary(SeasonDOP)
+TUKEYSeasonDOP <- TukeyHSD(x=SeasonDOP)
+visreg(SeasonDOP,"StationCode")
+visreg(SeasonDOP,"Seasons")
+visreg(SeasonDOP,"StationCode", by="Seasons")
+visreg(SeasonDOP,"Seasons", by="StationCode")
+```
+
+```{r}
+# Cat redo models with WY
+# Dissolved Ammonia
+ModelDA1 <- aov(log(DisAmmonia) ~ Seasons + StationCode + WaterYear, df_iter_seasons)
+summary(ModelDA1)
+ModelDA2 <- aov(log(DisAmmonia) ~ StationCode + WaterYear, df_iter_seasons)
+summary(ModelDA2)
+anova(ModelDA2)
+ModelDA3 <- aov(log(DisAmmonia) ~ StationCode + WaterYear + StationCode:WaterYear, df_iter_seasons)
+summary(ModelDA3)
+
+AIC(ModelDA1, ModelDA2, ModelDA3)
+plot(ModelDA2)
+TukeyHSD(x=ModelDA2)
+visreg(ModelDA2)
+
+# DissolvedNN
+
+ModelDNN1 <- aov(log(DisNitrateNitrite) ~ Seasons + StationCode + WaterYear, df_iter_seasons)
+summary(ModelDNN1)
+ModelDNN2 <- aov(log(DisNitrateNitrite) ~ Seasons*StationCode + WaterYear, df_iter_seasons)
+summary(ModelDNN2)
+anova(ModelDNN2)
+ModelDNN3 <- aov(log(DisNitrateNitrite) ~ Seasons*StationCode + Seasons*WaterYear, df_iter_seasons)
+summary(ModelDNN3)
+
+AIC(ModelDNN1, ModelDNN2, ModelDNN3)
+par(mfrow = c(2,2))
+plot(ModelDNN2)
+TukeyHSD(x=ModelDNN2)
+anova(ModelDNN2)
+visreg(ModelDNN2)
+visreg(ModelDNN2, "StationCode", by= "WaterYear")
+visreg(ModelDNN2, "StationCode", by= "Seasons")
+visreg(ModelDNN2, "WaterYear", by= "Seasons")
+
+# DS
+ModelDS1 <- aov(log(DisSilica) ~ Seasons + StationCode + WaterYear, df_iter_seasons)
+summary(ModelDS1)
+ModelDS2 <- aov(log(DisSilica) ~ StationCode + WaterYear, df_iter_seasons)
+summary(ModelDS2)
+anova(ModelDS2)
+ModelDS3 <- aov(log(DisSilica) ~ StationCode + WaterYear + StationCode:WaterYear, df_iter_seasons)
+summary(ModelDS3)
+
+AIC(ModelDS1, ModelDS2, ModelDS3)
+par(mfrow = c(2,2))
+plot(ModelDS3)
+TukeyHSD(x=ModelDS3)
+anova(ModelDS3)
+visreg(ModelDS3)
+visreg(ModelDS3, "StationCode", by = "WaterYear")
+
+# DOP
+ModelDOP1 <- aov(log(DOP) ~ Seasons + StationCode + WaterYear, df_iter_seasons)
+summary(ModelDOP1)
+ModelDOP2 <- aov(log(DOP) ~ StationCode + Seasons*WaterYear, df_iter_seasons)
+summary(ModelDOP2)
+anova(ModelDOP2)
+
+AIC(ModelDOP1, ModelDOP2)
+par(mfrow = c(2,2))
+plot(ModelDOP2)
+anova(ModelDOP2)
+TukeyHSD(x=ModelDOP2)
+visreg(ModelDOP2)
+visreg(ModelDOP2, "Seasons", by = "WaterYear")
+```
+
+
+
+
+
+###Step 11: Consider how inundation periods affect nutrient concentrations 
+```{r}
+inundation_data <- read_excel(here(root, "InundationWY2010toWY2019.xlsx"))
+str(inundation_data)
+inundation_data$Date <- as.Date(inundation_data$Date)
+inundation_data_WYS <- inundation_data %>% 
+  filter(Date >= "2016-10-01", Date <= "2019-09-30") %>% 
+  subset(select=-c(2:5))
+
+Inun_nutrients <- merge(x=df_iter_WY,              
+              y=inundation_data_WYS,
+              by= "Date",
+              all=FALSE)
+
+###take off sherwood 
+Inun_nutrients_Yolo<-filter(Inun_nutrients, StationCode !="SHR") 
+str(Inun_nutrients_Yolo)
+Inun_nutrients_Yolo$Inundation = as.factor(Inun_nutrients_Yolo$Inundation)
+
+##Run models 
+MInunDA <- aov(log(DisAmmonia) ~ Inundation, Inun_nutrients_Yolo)
+summary(MInunDA)
+#not significant 
+
+MInunDNN <- aov(log(DisNitrateNitrite) ~ Inundation, Inun_nutrients_Yolo)
+summary(MInunDNN)
+#not significant 
+
+MInunDS <- aov(log(DisSilica) ~ Inundation, Inun_nutrients_Yolo)
+summary(MInunDS)
+TUKEYInunDS <- TukeyHSD(x=MInunDS)
+##significant 
+visreg(MInunDS,"Inundation")
+
+MInunDOP <- aov(log(DOP) ~ Inundation, Inun_nutrients_Yolo)
+summary(MInunDOP)
+##significant 
+TUKEYInunDOP <- TukeyHSD(x=MInunDOP)
+visreg(MInunDOP,"Inundation")
+
+
+MInunDOPt <- aov(Inun_nutrients_Yolo$log(DOP), Inun_nutrients_yolo$Inundation)
+summary(MInunDOP)
+```
+
+###Step 12: Consider how inundation periods affect chlorophyll concentrations 
+```{r}
+
+Inun_Chla <- merge(x=chla_data_filtered,              
+              y=inundation_data_WYS,
+              by= "Date",
+              all=FALSE)
+
+###take off sherwood 
+Inun_Chla_Yolo<-filter(Inun_Chla, StationCode !="SHR") 
+
+##Run models 
+MInun_Chla <- aov(log(Result) ~ Inundation, Inun_Chla_Yolo)
+summary(MInun_Chla)
+# significant 
+
+```
+
+###Step 13: Consider how seasons affect chlorophyll concentrations 
+```{r}
+
+## need to merge Chla data with dfiterseasons 
+
+chla_seasons <- merge(x=df_iter_seasons,              
+              y=chla_data_filtered,
+              by= c('StationCode','Date'),
+              all=TRUE)
+
+#Restructing data so that new chla values have an associated season 
+chla_seasons$Year <- year(chla_seasons$Date)
+chla_seasons$Month <- factor(month(chla_seasons$Date))
+mymonths <- c("Jan","Feb","Mar",
+              "Apr","May","Jun",
+              "Jul","Aug","Sep",
+              "Oct", "Nov", "Dec")
+
+#add abbreviated month name
+chla_seasons$MonthAbb <- mymonths[chla_seasons$Month ]
+#set order of months
+chla_seasons$MonthAbb <-ordered(chla_seasons$MonthAbb,levels=c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"))
+
+chla_seasons <- chla_seasons %>% mutate(Seasons = ifelse(MonthAbb %in% c("Jan", "Feb", "Mar"), "Winter", ifelse(MonthAbb %in% c("Apr", "May", "Jun"), "Spring", ifelse(MonthAbb %in% c("Jul", "Aug", "Sep"), "Summer", ifelse(MonthAbb %in% c("Oct", "Nov", "Dec"), "Fall", NA)))))
+ 
+
+## All sites together 
+MChla_Seasons <- aov(log(Result) ~ Seasons*StationCode, chla_seasons)
+summary(MChla_Seasons)
+#allsignificant 
+#posthoc test 
+TUKEYChla <- TukeyHSD(x=MChla_Seasons)
+visreg(MChla_Seasons,"StationCode", ylab= "log (Chlorophyll)")
+visreg(MChla_Seasons,"Seasons", ylab= "log (Chlorophyll)")
+visreg(MChla_Seasons,"StationCode", by="Seasons")
+visreg(MChla_Seasons,"Seasons", by="StationCode")
+
+```
+
+###Step 14: Make Cholorophyll graph 
+```{r}
+
+chla_data_filtered <- filter(chla_data_filtered, !StationCode=="NA")
+chla_data_filtered$StationCode <- factor(chla_data_filtered$StationCode, levels = c("LIS", "STTD", "SHR"))
+
+(pChlorophyll <- ggplot() +
+        geom_line(chla_data_filtered, mapping = aes(Date, Result, group = StationCode, colour = StationCode), na.rm = TRUE,  size = 1.1) +
+        geom_point(chla_data_filtered, mapping = aes(Date, Result, group = StationCode, colour = StationCode, shape = StationCode), na.rm = TRUE, size = 3) +
+   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") + 
+  labs(title = "Chlorophyll-a vs Time", y="Chlorophyll-a (µg/L)", size = 12) + 
+  theme_bw() + scale_color_viridis(discrete=TRUE, direction = -1) +
+  theme(axis.text.x=element_text(angle=90, size=12), axis.title.x=element_blank()) +
+  theme(axis.text.y=element_text(size=12)))
+
+#Export graph 
+tiff(filename = "Chlorophyll.tiff", res = 300, width = 15, height = 7, pointsize = 11, family = "sans", units = "in", compression = "lzw") 
+(grid.arrange(pChlorophyll)) 
+dev.off() 
+
+```
