@@ -24,14 +24,16 @@ library(plyr)
 library(magrittr)
 library(plotly)
 library(readxl)
+library(here)
 
 library(extrafont)
 ```
 #setup
 ```{r}
-setwd("Y:\\YB_Manuscripts, Reports, Newsletters (AEU)\\YoloBypass_AnnualReport_LowerTrophic\\Lower Trophic Report_2017-2019\\Water Quality")
-WQ<- read.csv(file ="discrete_environmental_LTreport_WY2017-WY2019.csv")
-
+#setwd("Y:\\YB_Manuscripts, Reports, Newsletters (AEU)\\YoloBypass_AnnualReport_LowerTrophic\\Lower Trophic Report_2017-2019\\Water Quality")
+#WQ<- read.csv(file ="discrete_environmental_LTreport_WY2017-WY2019.csv")
+root <- "WY2017_WY2019/WQ_Chl"
+WQ<- read.csv(here::here(root, "discrete_environmental_LTreport_WY2017-WY2019.csv"))
 
 # Remove NA data points (when dates for both sites are the exact 365). Must remove NA to initially calculate mean, 
 WQ<-WQ[!is.na(WQ$WaterTemp),]
@@ -252,20 +254,22 @@ dev.off()
   WQ2<- pivot_longer(WQpH, cols = c(5,8,9,10,11),values_to = "Value", names_to = "Parameter")
   
   WQ3<-ggplot(WQ2)+
-    geom_line(aes(x=Date,y=Value, color=StationCode, linetype=StationCode))+
+    geom_line(aes(x=Date,y=Value, color=StationCode, linetype=StationCode), size = 1.2)+
+    geom_point(aes(x = Date, y = Value, color = StationCode, shape = StationCode), size = 2.1) +
      scale_color_viridis(discrete=TRUE)+
      theme_Publication() + #or whatever ggtheme you want
      #labs(x = "Date", y = "") +
-    facet_wrap(~Parameter, scales="free_y",nrow=5, strip.position = "left",labeller = as_labeller(c(DO = "DO (mg/L)", pH = "pH",SpCnd="SpCnd (mS/cm)", Turbidity="Turbidity (FNU)", WaterTemp="Water Temp (C)")))+
+    facet_wrap(~Parameter, scales="free_y",nrow=5, strip.position = "left",labeller = as_labeller(c(DO = "DO \n(mg/L)", pH = "pH",SpCnd="SpCnd \n(mS/cm)", Turbidity="Turbidity \n(FNU)", WaterTemp="Water Temp \n(°C)")))+
     theme(strip.background = element_rect(fill="White", color = "White"),
           strip.placement = "outside", axis.title.y = element_blank(), legend.position = "top")+
     
       scale_x_date(date_breaks = "3 months", date_labels= "%b-%Y")+
-    theme(axis.text.x = element_text(size = 13, angle =90), axis.text.y = element_text(size = 13), strip.text = element_text(size = 13),legend.text = element_text(size = 13), legend.title = element_text(size = 13))
+    scale_linetype_manual(values = c("dotted", "solid", "longdash"))+
+    theme(axis.text.x = element_text(size = 13, angle =90), axis.text.y = element_text(size = 13), strip.text = element_text(size = 13),legend.text = element_text(size = 13), legend.title = element_text(size = 13), axis.title.x = element_blank())
 
     WQ3
     
-tiff(filename = "PhytoChloroOutputFigs/WQAll.tiff", res = 300, width = 10, height = 12, family = "sans", units = "in", compression = "lzw")
+tiff(filename = "WY2017_WY2019/figures/fig_WQAll.tiff", res = 300, width = 10, height = 12, family = "sans", units = "in", compression = "lzw")
 (WQ3)
 dev.off()
 ```
