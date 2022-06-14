@@ -14,9 +14,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 rm(list=ls(all=TRUE))
 library(dplyr)
-library(gpplot2)
+library(ggplot2)
 library(lubridate)
 library(Polychrome)
+library(readr)
+library(here)
+library(viridis)
 ```
 
 To combine: 
@@ -35,7 +38,7 @@ driftProp <- read_csv(here::here(root,"ProportionalData.csv")) %>%
                          fWY == "2019" ~ "WY19",
                          TRUE ~ as.character(fWY)))
 zoopProp <- read_csv(here::here(root, "zoop_percent.csv"))%>%
-  rename(Station = Station.Code) %>%
+  dplyr::rename(Station = Station.Code) %>%
   mutate(Org2 = ifelse(Org2 == "Acanthocyclops vernalis adult", "Acanthocyclops spp. adult", Org2))
 
 # Bar plot station/WY
@@ -46,10 +49,10 @@ driftBar <- read_csv(here::here(root, "meanDriftBugs.csv"))%>%
                          TRUE ~ as.character(fWY)))
 
 zoopBar <- read_csv(here::here(root, "zoop150.sum.csv"))%>%
-  rename(Station = Station.Code)
+  dplyr::rename(Station = Station.Code)
 
 chlBar <- read_csv(here::here(root, "chlorophyll_bar.csv")) %>%
-  rename(fWY = WaterYear,
+  dplyr::rename(fWY = WaterYear,
          Station = StationCode) %>%
   mutate(fWY = case_when(fWY == "2017" ~ "WY17",
                          fWY == "2018" ~ "WY18",
@@ -61,7 +64,7 @@ chlBar <- read_csv(here::here(root, "chlorophyll_bar.csv")) %>%
                          TRUE ~ as.character(NA))) 
 
 phytoBar <- read_csv(here::here(root, "biovolume_bar.csv")) %>%
-  rename(fWY = WaterYear,
+  dplyr::rename(fWY = WaterYear,
          Station = StationCode) %>%
   mutate(fWY = case_when(fWY == "2017" ~ "WY17",
                          fWY == "2018" ~ "WY18",
@@ -80,11 +83,11 @@ inun <- read_csv(here::here(root, "inundation2.csv")) %>%
     inunP = ifelse(Inundation == "FALSE", 0, 3e07))
 driftInun <- read_csv(here::here(root, "driftDailyCPUE.csv"))
 zoopInun <- read_csv(here::here(root, "zoop150.sum1.csv"))%>%
-  rename(Station = Station.Code)
+  dplyr::rename(Station = Station.Code)
 chlInun <- read_csv(here::here(root, "chlorophyll_inundation.csv")) %>%
-  rename(Station = StationCode)
+  dplyr::rename(Station = StationCode)
 phytoInun <- read_csv(here::here(root, "biovolume_inundation.csv"))%>%
-  rename(Station = StationCode)
+  dplyr::rename(Station = StationCode)
   
 ```
 
@@ -129,7 +132,7 @@ Pre-steps: for each, took total dataset, calculated the proportion of each taxa 
 ```{r}
 zoopProp2 <- zoopProp %>%
   group_by(Station, WY, Org2) %>%
-  summarize(totalPercent = sum(percent))
+  summarize(totalPercent = sum(percent)/100)
 # This one
 (plot_zoopProp <- ggplot(zoopProp2, aes(x=WY, y = totalPercent, fill = Org2)) + 
    geom_bar(stat = "identity", color = "black") + facet_wrap(~Station) +
@@ -156,7 +159,7 @@ annotated
 ```
 
 ```{r}
-tiff(filename = paste("WY2017_WY2019/figures/fig_proportionalcombined.tiff"), res = 300, width = 8, height = 9, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+png(filename = paste("WY2017_WY2019/figures/fig_proportionalcombined.png"), res = 300, width = 8, height = 9, pointsize = 11, family = "sans", units = "in")
 annotated
 dev.off()
 ```
@@ -166,9 +169,9 @@ dev.off()
 ### Chlorophyll
 ```{r}
 chlBar2<- chlBar %>% 
-  rename(WY = fWY) %>%
-  group_by(Station, WY, WYClass) %>%
-  summarize(meanChl = mean(Result, na.rm = TRUE),
+  dplyr::rename(WY = fWY) %>%
+  dplyr::group_by(Station, WY, WYClass) %>%
+  dplyr::summarize(meanChl = mean(Result, na.rm = TRUE),
             n = n(),
             sd = sd(Result, na.rm = TRUE),
             se = sd/sqrt(n))
@@ -177,18 +180,19 @@ chlBar2<- chlBar %>%
 (plot_barChl <- ggplot(chlBar2, aes(x = WY, y = meanChl, fill = WYClass)) + 
    geom_col()  + 
    geom_errorbar(aes(ymin = meanChl-se, ymax = meanChl + se), width = .2) +
-    labs(title = "A) Chlorophyll") +
- facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Water Year") +
-    ylab(expression(paste("   Mean Daily \nChlorophyll (mgL"^-1,")"))) +
+    labs(title = "A) Chlorophyll a") +
+ facet_wrap(~Station) + 
+    scale_fill_manual(values = c("sandybrown", "lightsteelblue4")) + labs(x = "Water Year") +
+    ylab(expression(paste("   Mean Daily \nChlorophyll a (mgL"^-1,")"))) +
   guides(fill = guide_legend(title = "Water Year Class")) + theme_ltreport + theme(legend.position = "top",                                                                     axis.text.x = element_blank()))
 ```
 
 ### Biovolume
 ```{r}
 bvBar2<- phytoBar %>% 
-  rename(WY = fWY) %>%
-  group_by(Station, WY, WYClass) %>%
-  summarize(meanBV = mean(biovolume, na.rm = TRUE),
+  dplyr::rename(WY = fWY) %>%
+  dplyr::group_by(Station, WY, WYClass) %>%
+  dplyr::summarize(meanBV = mean(biovolume, na.rm = TRUE),
             n = n(),
             sd = sd(biovolume, na.rm = TRUE),
             se = sd/sqrt(n))
@@ -197,8 +201,8 @@ bvBar2<- phytoBar %>%
 (plot_barPhyto <- ggplot(bvBar2, aes(x = WY, y = meanBV, fill = WYClass)) + 
    geom_col()  + 
    geom_errorbar(aes(ymin = meanBV-se, ymax = meanBV + se), width = .2) +
-    labs(title = "B) Biovolume") +
- facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + 
+    labs(title = "B) Phytoplankton Biovolume Density") +
+ facet_wrap(~Station) + scale_fill_manual(values = c("sandybrown", "lightsteelblue4")) + labs(x = "Water Year") +
     ylab(expression(paste("         Mean Daily \nBiovolume Density (μm"^3,"L"^-1,")"))) +
   labs(x = "Water Year") +
   guides(fill = guide_legend(title = "Water Year Class")) + 
@@ -211,7 +215,7 @@ bvBar2<- phytoBar %>%
 ### Zoop
 ```{r}
 zoopBar2<- zoopBar %>% 
-  group_by(Station, WY, WY.Class) %>% summarize(meanCPUE = mean(daily.CPUE, na.rm = TRUE),
+  dplyr::group_by(Station, WY, WY.Class) %>% dplyr::summarize(meanCPUE = mean(daily.CPUE, na.rm = TRUE),
             sdCPUE = sd(daily.CPUE, na.rm = TRUE),
             n = n(),
             se = sdCPUE/sqrt(n))
@@ -221,7 +225,7 @@ zoopBar2<- zoopBar %>%
    geom_col()  + 
    geom_errorbar(aes(ymin = meanCPUE-se, ymax = meanCPUE + se), width = .2) +
     labs(title = "C) Zooplankton") +
- facet_wrap(~Station) + scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + labs(x = "Water Year") +
+ facet_wrap(~Station) + scale_fill_manual(values = c("sandybrown", "lightsteelblue4")) + labs(x = "Water Year") + labs(x = "Water Year") +
     ylab(expression(paste("     Mean Daily \nCPUE (Count m"^-3,")")))+
   guides(fill = guide_legend(title = "Water Year Class")) + theme_ltreport + theme(legend.position = "top",
                                                                                    axis.text.x = element_blank()))
@@ -235,7 +239,7 @@ zoopBar2<- zoopBar %>%
    geom_errorbar(aes(ymin = meanCPUE-se, ymax = meanCPUE + se), width = .2) +
    labs(title = "D) Drift Invertebrates")+
  facet_wrap(~Station) + 
-   scale_fill_viridis(discrete = TRUE, option = "cividis", begin = 1, end = 0) + 
+   scale_fill_manual(values = c("sandybrown", "lightsteelblue4")) + labs(x = "Water Year") +
   labs(x = "Water Year") +
     ylab(expression(paste("     Mean Daily \nCPUE (Count m"^-3,")")))+
   guides(fill = guide_legend(title = "Water Year Class")) + 
@@ -260,7 +264,11 @@ library(patchwork)
 ```
 
 ```{r}
-tiff(filename = paste("WY2017_WY2019/figures/fig_barcombined2.tiff"), res = 300, width = 6.5, height = 10, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+png(filename = paste("WY2017_WY2019/figures/fig_barcombined2.png"), res = 300, width = 7.5, height = 10, pointsize = 11, family = "sans", units = "in")
+combinedBar
+dev.off()
+
+tiff(filename = paste("WY2017_WY2019/figures/fig_barcombined_final.tiff"), res = 300, width = 8, height = 10, pointsize = 11, family = "sans", units = "in", compression = "lzw")
 combinedBar
 dev.off()
 ```
@@ -274,12 +282,13 @@ color = c("gray82", "white")
 
 (plot_inunChl <- ggplot() +
   geom_col(data = inun, aes(x = Date, y = inunC, fill = color, alpha = color)) +
-  geom_line(data = chlInun, aes(x = Date, y = Result, linetype = Station, color = Station)) +
+  geom_line(data = chlInun, aes(x = Date, y = Result, linetype = Station, color = Station),size = 1) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
-   scale_colour_manual(values = c("darkgreen", "hotpink3", "black")) + 
+   #scale_colour_manual(values = c("darkgreen", "hotpink3", "black")) + 
+       scale_colour_viridis(discrete = TRUE) +
     scale_alpha_manual(values = c(1, 0), guide = "none") +
    scale_linetype_manual(values = c("dotted", "solid", "longdash"))+
-  labs(title = "A) Chlorophyll", y = expression(Chlorophyll~(mg~L^-1)), fill = "Inundation") +
+  labs(title = "A) Chlorophyll a", y = expression(Chlorophyll~a~(mg~L^-1)), fill = "Inundation") +
  scale_fill_manual(values = color) +
     theme_bw() + 
   theme_ltreport + 
@@ -292,12 +301,13 @@ color = c("gray82", "white")
 ```{r}
 (plot_inunPhyto <- ggplot() +
   geom_col(data = inun, aes(x = Date, y = inunP, fill = color, alpha = color)) +
-  geom_line(data = phytoInun, aes(x = Date, y = biovolume, linetype = Station, color = Station)) +
+  geom_line(data = phytoInun, aes(x = Date, y = biovolume, linetype = Station, color = Station), size = 1) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
-   scale_colour_manual(values = c("darkgreen", "hotpink3", "black")) + 
+   #scale_colour_manual(values = c("darkgreen", "hotpink3", "black")) + 
+      scale_colour_viridis(discrete = TRUE) +
     scale_alpha_manual(values = c(1, 0), guide = "none") +
    scale_linetype_manual(values = c("dotted", "solid", "longdash"))+
-  labs(title = "B) Phytoplankton", y = expression(Biovolume~Density~(μm^3~L^-1)), fill = "Inundation") +
+  labs(title = "B) Phytoplankton Biovolume Density", y = expression(Biovolume~Density~(μm^3~L^-1)), fill = "Inundation") +
  scale_fill_manual(values = color) +
     theme_bw() + 
   theme_ltreport + 
@@ -307,11 +317,12 @@ color = c("gray82", "white")
 ```
 ### Zoop
 ```{r}
+# picked 2nd and 3rd color of a 3-color viridis scale to match above
 (plot_inunZoop <- ggplot() +
   geom_col(data = inun, aes(x = Date, y = inunZ, fill = color, alpha = color)) +
-  geom_line(data = zoopInun, aes(x = Date, y = daily.CPUE, linetype = Station, color = Station)) +
+  geom_line(data = zoopInun, aes(x = Date, y = daily.CPUE, linetype = Station, color = Station), size = 1) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
-   scale_colour_manual(values = c("hotpink3", "black")) + 
+   scale_colour_manual(values = c(viridis(3)[2], viridis(3)[3])) + 
     scale_alpha_manual(values = c(1, 0), guide = "none") +
    
    scale_linetype_manual(values = c("solid", "longdash"))+
@@ -330,9 +341,9 @@ color = c("gray82", "white")
 # Total CPUE
 (plot_inunDrift <- ggplot() +
   geom_col(data = inun, aes(x = Date, y = inunD, fill = color, alpha = color)) +
-  geom_line(data = driftInun, aes(x = Date, y = CPUEDaily, linetype = Station, color = Station)) +
+  geom_line(data = driftInun, aes(x = Date, y = CPUEDaily, linetype = Station, color = Station), size = 1) +
   scale_x_date(date_breaks = "3 months", date_labels = "%b-%Y") +
-   scale_colour_manual(values = c("hotpink3", "black")) + 
+    scale_colour_manual(values = c(viridis(3)[2], viridis(3)[3])) +
     scale_alpha_manual(values = c(1, 0), guide = "none") +
     
    scale_linetype_manual(values = c("solid", "longdash"))+
@@ -363,7 +374,7 @@ library(gridExtra)
 ```
 
 ```{r}
-tiff(filename = paste("WY2017_WY2019/figures/fig_inuncombined.tiff"), res = 300, width = 6.5, height = 9, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+png(filename = paste("WY2017_WY2019/figures/fig_inuncombined.png"), res = 300, width = 6.5, height = 9, pointsize = 11, family = "sans", units = "in")
 combinedInun
 
 dev.off()
@@ -396,7 +407,7 @@ dev.off()
 
 ## Export code
 ```{r}
-tiff(filename = paste("WY2016_WY2019/figures/fig_drift4b_totalcpuebyinundation.tiff"), res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
+tiff(filename = paste("WY2017_WY2019/figures/fig_drift4b_totalcpuebyinundation.tiff"), res = 300, width = 7, height = 5, pointsize = 11, family = "sans", units = "in", compression = "lzw")
 inunDriftAll
 dev.off()
 ```
