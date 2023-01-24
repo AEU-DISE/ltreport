@@ -203,7 +203,7 @@ bvBar2<- phytoBar %>%
    geom_errorbar(aes(ymin = meanBV-se, ymax = meanBV + se), width = .2) +
     labs(title = "B) Phytoplankton Biovolume Density") +
  facet_wrap(~Station) + scale_fill_manual(values = c("sandybrown", "lightsteelblue4")) + labs(x = "Water Year") +
-    ylab(expression(paste("         Mean Daily \nBiovolume Density (μm"^3,"L"^-1,")"))) +
+    ylab(expression(paste("         Mean Daily \n Biovolume Density (μm"^3,"L"^-1,")"))) +
   labs(x = "Water Year") +
   guides(fill = guide_legend(title = "Water Year Class")) + 
     theme_ltreport + 
