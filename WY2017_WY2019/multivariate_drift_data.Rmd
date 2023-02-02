@@ -44,7 +44,7 @@ Drift_Order_complete <- driftOrderAbund %>%
   filter(!is.na(Inundation)) %>%
   rename(CPUE2 = CPUEDaily) %>%
   group_by(Station, Date, Order) %>%
-  arrange(desc(Station, Date, Order, CPUE2)) %>%
+  arrange(Station, Date, Order, desc(CPUE2)) %>%
   slice(1) %>% # there is one duplicate 12/21/2016 that is causing issues. All 0s
   ungroup()
 ```
@@ -164,7 +164,7 @@ legend.position = "top")
 f_plotNMDS <- function(nmdsResult, speciesPredictorMatrix, covariate, colors = cols, legendtitle=covariate) {
   
 # Calculate scores and prepare data frame for plotting
-nmds.scores <- as.data.frame(scores(nmdsResult))
+nmds.scores <- as.data.frame(scores(nmdsResult, "sites"))
 species.scores <- as.data.frame(scores(nmdsResult, "species"))
 species.scores$species <- rownames(species.scores)
 
@@ -179,22 +179,23 @@ df.nmdsplot <- cbind(nmds.scores, speciesPredictorMatrix)
   # plot
   ggplot(df.nmdsplot, aes(NMDS1, NMDS2)) +
   geom_point(aes(color = .data[[covariate]],shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
-  ggrepel::geom_text_repel(data = species.scores, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
+  ggrepel::geom_text_repel(data = species.scores, aes(label = species), max.overlaps = 12) + #try to avoid overlapping labels
   stat_ellipse(type = 't', size = 1, aes(color = .data[[covariate]],linetype = .data[[covariate]])) +
-  annotate("text", x = min(df.nmdsplot$NMDS1) + 0.25, y = max(df.nmdsplot$NMDS2), label = paste('Stress = ', round(nmdsResult$stress,3))) + # Add stress to plot
+  annotate("text", x = min(df.nmdsplot$NMDS1) + 0.25, y = min(df.nmdsplot$NMDS2) -0.05, label = paste('Stress = ', round(nmdsResult$stress,3))) + # Add stress to plot
   scale_color_manual(values = colors, name = legendtitle) +
   scale_x_continuous(limits = limits_x) + 
   #scale_y_continuous(limits = limits_y) + # include if you want to edit y limits
   labs(shape = legendtitle, linetype = legendtitle, color = legendtitle) +
-  theme_NMDS
+  theme_NMDS +
+    theme(legend.position = "top")
 }
 
 ```
 
 ##### Make plots
 ```{r}
-cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
-cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
+cols <- c("#414487FF",  "#7AD151FF", "#FFA500")
+cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FFA500")
 nmdsOrder$Season3 <- factor(nmdsOrder$Season3, levels = c("Fall", "Winter", "Spring", "Summer"))
 
 (nmds_station <- f_plotNMDS(nmdsResult = nmdsOrder, speciesPredictorMatrix = Order_w2,  covariate = "Station", colors = cols))
@@ -213,7 +214,7 @@ nmdsOrder$Season3 <- factor(nmdsOrder$Season3, levels = c("Fall", "Winter", "Spr
 ```{r}
 library(ggpubr)
 
-tiff("WY2017_WY2019/figures/fig_drift_NMDS_All_Drift.tiff", res=300, width = 10, height = 8.5, units = "in",  family = "sans", compression = "lzw")
+tiff("WY2017_WY2019/figures/fig_drift_NMDS_All_Drift_v2.tiff", res=300, width = 10, height = 8.5, units = "in",  family = "sans", compression = "lzw")
 ggarrange(nmds_station, nmds_season3, nmds_season3_STTD, nmds_inundation, ncol = 2, nrow = 2, labels = c("A", "B", "C", "D"))
 dev.off()
 

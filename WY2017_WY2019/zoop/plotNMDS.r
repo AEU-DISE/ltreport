@@ -96,3 +96,4 @@ PlotNMDS2 = function(NMDS1, # results of the NMDS you want to plot
   #        pch = shapes[1:length(levels(data$group))], col = "blue", bty = "n")
   
 }
+

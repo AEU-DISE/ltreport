@@ -3,6 +3,8 @@ title: "LT IEP report 2017-2019 zoop analysis code"
 author: "Mallory Bedwell"
 date: "8/4/2020"
 output: html_document 
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -1119,7 +1121,7 @@ panel.background = element_blank())
 f_plotNMDS <- function(nmdsResult, speciesPredictorMatrix, covariate, colors = cols, legendtitle=covariate) {
   
 # Calculate scores and prepare data frame for plotting
-nmds.scores <- as.data.frame(scores(nmdsResult))
+nmds.scores <- as.data.frame(scores(nmdsResult, "sites"))
 species.scores <- as.data.frame(scores(nmdsResult, "species"))
 species.scores$species <- rownames(species.scores)
 # Need a category to merge scores with the rest of env data
@@ -1133,7 +1135,7 @@ df.nmdsplot <- cbind(nmds.scores, speciesPredictorMatrix)
 # plot
 ggplot(df.nmdsplot, aes(NMDS1, NMDS2)) +
   geom_point(aes(color = .data[[covariate]],shape = .data[[covariate]]), size = 3, position = position_jitter(.1) ) +
-  ggrepel::geom_text_repel(data = species.scores, aes(label = species), max.overlaps = 20) + #try to avoid overlapping labels
+  ggrepel::geom_text_repel(data = species.scores, aes(label = species), max.overlaps = 12) + #try to avoid overlapping labels
   stat_ellipse(type = 't', size = 1, aes(color = .data[[covariate]],linetype = .data[[covariate]])) +
   annotate("text", x = min(df.nmdsplot$NMDS1) -0.5, y = min(df.nmdsplot$NMDS2)-0.75, label = paste('Stress = ', round(nmdsResult$stress,3))) + # Add stress to plot
   scale_color_manual(values = colors, name = legendtitle) +
@@ -1146,25 +1148,33 @@ ggplot(df.nmdsplot, aes(NMDS1, NMDS2)) +
 
   
 ###Make Plots
-cols <- c("#414487FF",  "#7AD151FF", "#FDE725FF")
-cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FDE725FF")
+cols <- c("#414487FF",  "#7AD151FF", "#FFA500")
+cols2 <- c("#414487FF",  "#22A884FF", "#7AD151FF", "#FFA500")
 
 #plot of all 150 data with station
-(nmds_station <- f_plotNMDS(nmds150.org, all.flip150.org,  "Station.Code", cols, "Station"))
+(nmds_station <- f_plotNMDS(nmds150.org, all.flip150.org,  "Station.Code", cols, "Station")) 
 #plot of all 150 data with WY
-(nmds_WY <- f_plotNMDS(nmds150.org, all.flip150.org, "WY", cols, "Water Year"))+ theme(legend.position = "top")
+(nmds_WY <- f_plotNMDS(nmds150.org, all.flip150.org, "WY", cols, "Water Year"))
 #plot of all 150 data with Season 2
-(nmds_season1 <- f_plotNMDS(nmds150.org, all.flip150.org, "Season2", cols2, "Season")) + theme(legend.position = "top")
+(nmds_season1 <- f_plotNMDS(nmds150.org, all.flip150.org, "Season2", cols2, "Season")) 
 
 #plot of STTD data only with inundation
-(nmds_inundation <- f_plotNMDS(nmds150.STTD.org, all.flip150.STTD.org,  "Inundation", cols))+ theme(legend.position = "top")  
+(nmds_inundation <- f_plotNMDS(nmds150.STTD.org, all.flip150.STTD.org,  "Inundation", cols))
 #plot of STTD data only with inundation
-(nmds_season_STTD <- f_plotNMDS(nmds150.STTD.org, all.flip150.STTD.org, "Season2", cols2, "Season")) + theme(legend.position = "top")
+(nmds_season_STTD <- f_plotNMDS(nmds150.STTD.org, all.flip150.STTD.org, "Season2", cols2, "Season"))
 
 #combine plots together for article
 library(ggpubr)
 
 ggarrange(nmds_station, nmds_season1, nmds_season_STTD, nmds_inundation, labels = c("A", "B", "C", "D"), ncol=2, nrow = 2) 
+```
+
+```{r}
+library(ggpubr)
+
+tiff("WY2017_WY2019/figures/fig_drift_NMDS_All_Zoop_v2.tiff", res=300, width = 10, height = 8.5, units = "in",  family = "sans", compression = "lzw")
+ggarrange(nmds_station, nmds_season1, nmds_season_STTD, nmds_inundation, ncol = 2, nrow = 2, labels = c("A", "B", "C", "D"))
+dev.off()
 ```
 
 
